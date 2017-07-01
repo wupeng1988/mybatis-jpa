@@ -27,12 +27,6 @@ public interface JpaMapper<T, ID> extends PagingAndSortingMapper<T, ID> {
      */
     List<T> findAllById(Iterable<ID> ids);
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.data.repository.CrudMapper#save(java.lang.Iterable)
-     */
-    <S extends T> List<S> saveAll(Iterable<S> entities);
-
     /**
      * Flushes all pending changes to the database.
      */
@@ -44,7 +38,7 @@ public interface JpaMapper<T, ID> extends PagingAndSortingMapper<T, ID> {
      * @param entity
      * @return the saved entity
      */
-    <S extends T> S saveAndFlush(S entity);
+    <S extends T> int saveAndFlush(S entity);
 
     /**
      * Deletes the given entities in a batch which means it will create a single {@link Query}. Assume that we will clear

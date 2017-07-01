@@ -1,7 +1,5 @@
 package org.apache.ibatis.singledog.jpa.mapper;
 
-import java.util.Optional;
-
 public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 
 	/**
@@ -11,7 +9,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 	 * @param entity must not be {@literal null}.
 	 * @return the saved entity will never be {@literal null}.
 	 */
-	<S extends T> S save(S entity);
+	<S extends T> int save(S entity);
 
 	/**
 	 * Saves all given entities.
@@ -20,7 +18,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 	 * @return the saved entities will never be {@literal null}.
 	 * @throws IllegalArgumentException in case the given entity is {@literal null}.
 	 */
-	<S extends T> Iterable<S> saveAll(Iterable<S> entities);
+	<S extends T> int saveAll(Iterable<S> entities);
 
 	/**
 	 * Retrieves an entity by its id.
@@ -29,7 +27,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 	 * @return the entity with the given id or {@literal Optional#empty()} if none found
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
-	Optional<T> findById(ID id);
+	T findById(ID id);
 
 	/**
 	 * Returns whether an entity with the given id exists.
@@ -39,21 +37,6 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 	 * @throws IllegalArgumentException if {@code id} is {@literal null}.
 	 */
 	boolean existsById(ID id);
-
-	/**
-	 * Returns all instances of the type.
-	 * 
-	 * @return all entities
-	 */
-	Iterable<T> findAll();
-
-	/**
-	 * Returns all instances of the type with the given IDs.
-	 * 
-	 * @param ids
-	 * @return
-	 */
-	Iterable<T> findAllById(Iterable<ID> ids);
 
 	/**
 	 * Returns the number of entities available.

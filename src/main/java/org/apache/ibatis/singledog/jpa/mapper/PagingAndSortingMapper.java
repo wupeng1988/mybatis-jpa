@@ -4,6 +4,8 @@ import org.apache.ibatis.singledog.jpa.domain.Page;
 import org.apache.ibatis.singledog.jpa.domain.Pageable;
 import org.apache.ibatis.singledog.jpa.domain.Sort;
 
+import java.util.List;
+
 public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
 
 	/**
@@ -12,7 +14,7 @@ public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
 	 * @param sort
 	 * @return all entities sorted by the given options
 	 */
-	Iterable<T> findAll(Sort sort);
+	List<T> findAll(Sort sort);
 
 	/**
 	 * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
