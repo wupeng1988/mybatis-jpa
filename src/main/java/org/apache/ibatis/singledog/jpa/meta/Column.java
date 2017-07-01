@@ -1,6 +1,7 @@
 package org.apache.ibatis.singledog.jpa.meta;
 
 import org.apache.ibatis.singledog.jpa.annotation.Id;
+import org.apache.ibatis.utils.AnnotationUtils;
 
 import java.lang.reflect.Field;
 
@@ -22,19 +23,26 @@ public class Column {
 
     public Column() {}
 
-    public Column(org.apache.ibatis.singledog.jpa.annotation.Column column, Field field) {
-        this.column = column.name();
-        this.columnDefinition = column.columnDefinition();
-        this.unique = column.unique();
-        this.nullable = column.nullable();
-        this.table = column.table();
-        this.length = column.length();
+    public Column(Id id, Field field) {
 
-        if (field != null) {
-            this.property = field.getName();
-            this.javaType = field.getType().getName();
-//            Id id = Anno
+    }
+
+    public Column(org.apache.ibatis.singledog.jpa.annotation.Column column, Id id, Field field) {
+        this.property = field.getName();
+        this.javaType = field.getType().getName();
+        this.isId = id != null;
+
+        if (column != null) {
+            this.column = column.name();
+            this.columnDefinition = column.columnDefinition();
+            this.unique = column.unique();
+            this.nullable = column.nullable();
+            this.table = column.table();
+            this.length = column.length();
+        } else if (isId) {
+
         }
+
     }
 
     public String getTable() {
