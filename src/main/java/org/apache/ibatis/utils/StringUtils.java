@@ -1150,4 +1150,64 @@ public abstract class StringUtils {
 		return arrayToDelimitedString(arr, ",");
 	}
 
+
+	/**
+	 * 驼峰命名转换为数据库的下划线
+	 *
+	 * @param str
+	 * @return
+	 */
+	public static String humpToUnderScore(String str) {
+		if (StringUtils.isEmpty(str))
+			return str;
+
+		char[] chars = str.toCharArray();
+		StringBuilder stringBuilder = new StringBuilder();
+		int lastLowercaseIdx = -1;
+		for (int i = 0; i < chars.length; i++) {
+			char ch = chars[i];
+			if (Character.isLowerCase(ch)) {
+				lastLowercaseIdx = i;
+				stringBuilder.append(ch);
+			} else if (lastLowercaseIdx > 0 && lastLowercaseIdx + 1 == i){
+				stringBuilder.append("_").append(Character.toLowerCase(ch));
+			} else {
+				stringBuilder.append(ch);
+			}
+		}
+
+		return stringBuilder.toString();
+	}
+
+	public static boolean equals(final CharSequence cs1, final CharSequence cs2) {
+		if (cs1 == cs2) {
+			return true;
+		}
+		if (cs1 == null || cs2 == null) {
+			return false;
+		}
+		if (cs1.length() != cs2.length()) {
+			return false;
+		}
+
+		return cs1.equals(cs2);
+	}
+
+	public static boolean equalsIgnoreCase(final CharSequence cs1, final CharSequence cs2) {
+		if (cs1 == cs2) {
+			return true;
+		}
+		if (cs1 == null || cs2 == null) {
+			return false;
+		}
+		if (cs1.length() != cs2.length()) {
+			return false;
+		}
+
+		if ((cs1 instanceof String) && (cs2 instanceof String)) {
+			return ((String) cs1).equalsIgnoreCase((String) cs2);
+		}
+
+		return cs1.equals(cs2);
+	}
 }

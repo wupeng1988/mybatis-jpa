@@ -8,15 +8,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by Adam on 2017/7/1.
  */
-public class SqlGenerator {
+public class EntitySqlDispatcher {
 
     private static final Map<Class, MetaDataParser> metaDataParserMap = new ConcurrentHashMap<>();
 
-    private static final SqlGenerator instance = new SqlGenerator();
+    private static final EntitySqlDispatcher instance = new EntitySqlDispatcher();
 
-    private SqlGenerator() {}
+    private EntitySqlDispatcher() {}
 
-    public static SqlGenerator getInstance() {
+    public static EntitySqlDispatcher getInstance() {
         return instance;
     }
 

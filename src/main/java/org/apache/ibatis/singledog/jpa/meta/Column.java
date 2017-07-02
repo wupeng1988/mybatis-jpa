@@ -1,35 +1,44 @@
 package org.apache.ibatis.singledog.jpa.meta;
 
+import jdk.nashorn.internal.ir.Flags;
+import org.apache.ibatis.mapping.ResultFlag;
+import org.apache.ibatis.mapping.ResultMapping;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.singledog.jpa.annotation.Id;
-import org.apache.ibatis.utils.AnnotationUtils;
+import org.apache.ibatis.utils.StringUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Adam on 2017/7/1.
  */
-public class Column {
+public final class Column {
 
     private String table;
     private boolean isId;
     private String property;
     private String column;
     private String javaType;
-    private String jdbcType;
+    private Class javaTypeClass;
+    private String type;
     private boolean nullable = true;
     private boolean unique = false;
     private String columnDefinition;
-    private int length;
+    private int scale = 2;
+    private int length = 255;
 
     public Column() {}
 
     public Column(Id id, Field field) {
-
+        this(null, id, field);
     }
 
     public Column(org.apache.ibatis.singledog.jpa.annotation.Column column, Id id, Field field) {
         this.property = field.getName();
         this.javaType = field.getType().getName();
+        this.javaTypeClass = field.getType();
         this.isId = id != null;
 
         if (column != null) {
@@ -39,10 +48,31 @@ public class Column {
             this.nullable = column.nullable();
             this.table = column.table();
             this.length = column.length();
+            this.type = column.type();
+            this.scale = column.scale();
         } else if (isId) {
-
+            this.column = StringUtils.humpToUnderScore(this.property);
         }
 
+        if (StringUtils.isEmpty(type)) {
+            this.type = JdbcTypeConverter.toJdbcType(field.getType(), this.length);
+        }
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    public Class getJavaTypeClass() {
+        return javaTypeClass;
+    }
+
+    public void setJavaTypeClass(Class javaTypeClass) {
+        this.javaTypeClass = javaTypeClass;
     }
 
     public String getTable() {
@@ -85,12 +115,12 @@ public class Column {
         this.javaType = javaType;
     }
 
-    public String getJdbcType() {
-        return jdbcType;
+    public String getType() {
+        return type;
     }
 
-    public void setJdbcType(String jdbcType) {
-        this.jdbcType = jdbcType;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public boolean isNullable() {
@@ -123,5 +153,17 @@ public class Column {
 
     public void setLength(int length) {
         this.length = length;
+    }
+
+    public ResultMapping toResultMapping(Configuration configuration, String resultMapId) {
+        List<ResultFlag> flags = new ArrayList<>();
+        if (isId()) {
+            flags.add(ResultFlag.ID);
+        }
+        return new ResultMapping.Builder(configuration, this.getProperty(),
+                this.getColumn(), this.getJavaTypeClass())
+                .nestedResultMapId(resultMapId)
+                .flags(flags)
+                .build();
     }
 }

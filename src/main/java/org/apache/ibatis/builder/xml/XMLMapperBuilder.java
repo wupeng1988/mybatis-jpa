@@ -15,37 +15,24 @@
  */
 package org.apache.ibatis.builder.xml;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.ibatis.builder.BaseBuilder;
-import org.apache.ibatis.builder.BuilderException;
-import org.apache.ibatis.builder.CacheRefResolver;
-import org.apache.ibatis.builder.IncompleteElementException;
-import org.apache.ibatis.builder.MapperBuilderAssistant;
-import org.apache.ibatis.builder.ResultMapResolver;
+import org.apache.ibatis.builder.*;
 import org.apache.ibatis.cache.Cache;
+import org.apache.ibatis.exceptions.EntityNotFoundException;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.mapping.Discriminator;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.ParameterMode;
-import org.apache.ibatis.mapping.ResultFlag;
-import org.apache.ibatis.mapping.ResultMap;
-import org.apache.ibatis.mapping.ResultMapping;
+import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.parsing.XPathParser;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.singledog.jpa.mapper.Mapper;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * @author Clinton Begin
@@ -56,6 +43,8 @@ public class XMLMapperBuilder extends BaseBuilder {
   private final MapperBuilderAssistant builderAssistant;
   private final Map<String, XNode> sqlFragments;
   private final String resource;
+  private boolean enabledJpaFeatures = false;
+  private Class entityClass;
 
   @Deprecated
   public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
@@ -109,6 +98,13 @@ public class XMLMapperBuilder extends BaseBuilder {
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
+
+      Class namespaceClass = Class.forName(namespace);
+      if (Mapper.class.isAssignableFrom(namespaceClass)) {
+        this.enabledJpaFeatures = true;
+        this.entityClass = findEntityClass(namespaceClass);
+      }
+
       builderAssistant.setCurrentNamespace(namespace);
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
@@ -119,6 +115,23 @@ public class XMLMapperBuilder extends BaseBuilder {
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
     }
+  }
+
+
+  private Class findEntityClass(Class mapperClass) {
+    Type[] types = mapperClass.getGenericInterfaces();
+    if (types != null && types.length > 0) {
+      for (Type type : types) {
+        if (type instanceof ParameterizedType) {
+          Class rawClass = (Class) ((ParameterizedType) type).getRawType();
+          if (Mapper.class.isAssignableFrom(rawClass)) {
+            return (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+          }
+        }
+      }
+    }
+
+    throw new EntityNotFoundException("No entity found for mapper : " + mapperClass.getName());
   }
 
   private void buildStatementFromContext(List<XNode> list) {
