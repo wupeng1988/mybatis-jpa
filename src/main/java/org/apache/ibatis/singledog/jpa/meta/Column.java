@@ -1,6 +1,5 @@
 package org.apache.ibatis.singledog.jpa.meta;
 
-import jdk.nashorn.internal.ir.Flags;
 import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.Configuration;

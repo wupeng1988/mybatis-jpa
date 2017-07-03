@@ -22,5 +22,5 @@ public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
 	 * @param pageable
 	 * @return a page of entities
 	 */
-	Page<T> findAll(Pageable pageable);
+	Page<T> findAllByPage(Pageable pageable);
 }

@@ -1,7 +1,6 @@
 package org.apache.ibatis.singledog.jpa.generator;
 
 import org.apache.ibatis.mapping.ResultMap;
-import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.singledog.jpa.annotation.Entity;
 import org.apache.ibatis.singledog.jpa.annotation.Id;
@@ -26,13 +25,15 @@ public class MetaDataParser {
     public static final String DEFAULT_RESULT_MAP = "default";
 
     private Class entityClass;
+    private Class idClass;
     private Table table;
     private ResultMap resultMap;
     private Configuration configuration;
 
-    public MetaDataParser(Class entityClass, Configuration configuration) {
+    public MetaDataParser(Class entityClass, Class idClass, Configuration configuration) {
         this.entityClass = entityClass;
         this.configuration = configuration;
+        this.idClass = idClass;
     }
 
     public Class getEntityClass() {
@@ -97,6 +98,10 @@ public class MetaDataParser {
 
     public Table getTable() {
         return table;
+    }
+
+    public Class getIdClass() {
+        return idClass;
     }
 
     public Configuration getConfiguration() {

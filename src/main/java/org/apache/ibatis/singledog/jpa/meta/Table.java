@@ -5,13 +5,15 @@ import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.utils.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Adam on 2017/7/1.
  */
 public final class Table {
+    public static final String ALL_COLUMNS = "all_columns";
+    public static final String ALL_COLUMNS_UPPERCASE = ALL_COLUMNS.toUpperCase();
 
     private String name;
     private String catalog;
@@ -20,7 +22,22 @@ public final class Table {
     private List<Index> indexes;
     private List<Column> columns;
     private List<Column> idColumns;
-    private String allColumns;
+    private List<SqlSegment> sqlSegments = new ArrayList<>();
+    private Map<String, SqlSegment> sqlSegmentsMap;
+
+    public List<Column> getColumns(boolean withId) {
+        List<Column> columnList = new ArrayList<>(this.columns);
+        if (withId)
+            columnList.addAll(0, this.idColumns);
+        return Collections.unmodifiableList(columnList);
+    }
+
+    public Column getSingleIdColumn() {
+        if (this.idColumns.size() > 1)
+            throw new UnsupportedOperationException("More than one primary keys found ! "
+                    + this.entity.getName());
+        return idColumns.get(0);
+    }
 
     public Class getEntity() {
         return entity;
@@ -31,7 +48,7 @@ public final class Table {
     }
 
     public List<Column> getIdColumns() {
-        return idColumns;
+        return Collections.unmodifiableList(idColumns);
     }
 
     public void setIdColumns(List<Column> idColumns) {
@@ -63,7 +80,7 @@ public final class Table {
     }
 
     public List<Index> getIndexes() {
-        return indexes;
+        return Collections.unmodifiableList(indexes);
     }
 
     public void setIndexes(List<Index> indexes) {
@@ -71,36 +88,42 @@ public final class Table {
     }
 
     public List<Column> getColumns() {
-        return columns;
+        return Collections.unmodifiableList(columns);
     }
 
     public void setColumns(List<Column> columns) {
         this.columns = columns;
     }
 
-    public String getAllColumns() {
-        return allColumns;
+    public List<SqlSegment> getSqlSegments() {
+        return Collections.unmodifiableList(sqlSegments);
     }
 
-    public void setAllColumns(String allColumns) {
-        this.allColumns = allColumns;
+    public void setSqlSegments(List<SqlSegment> sqlSegments) {
+        this.sqlSegments = sqlSegments;
+    }
+
+    public String getAllColumns() {
+        return this.sqlSegmentsMap.get(ALL_COLUMNS).getSql();
     }
 
     public void afterPropertiesSet() {
         StringBuilder builder = new StringBuilder();
 
         if (!CollectionUtils.isEmpty(this.idColumns)) {
-            this.idColumns.forEach(column -> builder.append(column.getColumn()).append(","));
+            this.idColumns.forEach(column -> builder.append(" ").append(column.getColumn()).append(","));
         }
 
         if (!CollectionUtils.isEmpty(this.columns)) {
-            this.columns.forEach(column -> builder.append(column.getColumn()).append(","));
+            this.columns.forEach(column -> builder.append(" ").append(column.getColumn()).append(","));
         }
 
         if (builder.length() > 0)
             builder.deleteCharAt(builder.length() - 1);
 
-        setAllColumns(builder.toString());
+        sqlSegments.add(new SqlSegment(ALL_COLUMNS, builder.toString()));
+        sqlSegments.add(new SqlSegment(ALL_COLUMNS_UPPERCASE, builder.toString()));
+        sqlSegmentsMap = sqlSegments.stream().collect(Collectors.toMap(SqlSegment::getId, s -> s));
     }
 
     public ResultMap toResultMap(Configuration configuration, String resultMapId) {
@@ -112,4 +135,34 @@ public final class Table {
         return new ResultMap.Builder(configuration, resultMapId, this.entity, columnMappings)
                 .build();
     }
+
+    public static class SqlSegment {
+        private String id;
+        private String sql;
+
+        public SqlSegment() {
+        }
+
+        public SqlSegment(String id, String sql) {
+            this.id = id;
+            this.sql = sql;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+
+        public void setSql(String sql) {
+            this.sql = sql;
+        }
+    }
+
 }

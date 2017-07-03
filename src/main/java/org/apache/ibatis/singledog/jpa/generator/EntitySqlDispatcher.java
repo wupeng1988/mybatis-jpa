@@ -20,10 +20,10 @@ public class EntitySqlDispatcher {
         return instance;
     }
 
-    public MetaDataParser parseEntity(Class clazz, Configuration configuration) {
+    public MetaDataParser parseEntity(Class clazz, Class idClass, Configuration configuration) {
         MetaDataParser metaDataParser = getMetaDataParser(clazz);
         if (metaDataParser == null) {
-            metaDataParser = new MetaDataParser(clazz, configuration);
+            metaDataParser = new MetaDataParser(clazz, idClass, configuration);
             metaDataParser.parse();
             addMetaDataParser(metaDataParser);
         }
