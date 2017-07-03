@@ -73,4 +73,6 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @return
      */
     <S extends T> int saveSelective(S entity);
+
+    <S extends T> int saveSelectiveAutoIncrement(S entity);
 }

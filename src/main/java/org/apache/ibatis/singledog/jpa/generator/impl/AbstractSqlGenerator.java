@@ -133,6 +133,18 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return root;
     }
 
+    Element createIfElement(String test, TextProvider provider) {
+        Document document = createDocument();
+        Element root = document.createElement("if");
+        root.setAttribute("test", test);
+        root.appendChild(document.createTextNode(provider.getText()));
+        return root;
+    }
+
+    Element createIfNotNullElement(String property, TextProvider provider) {
+        return createIfElement(property + " != null", provider);
+    }
+
     interface TextProvider {
         String getText();
     }
