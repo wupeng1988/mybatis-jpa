@@ -119,6 +119,8 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (this.enabledJpaFeatures) {
                 embeddedEntityResultMap(this.entityClass);
                 embeddedEntitySql(this.entityClass);
+                EmbeddedEntityStatementBuilder builder = new EmbeddedEntityStatementBuilder(configuration, builderAssistant, entityClass);
+                builder.parseStatementNode();
             }
             buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
             if (this.enabledJpaFeatures)

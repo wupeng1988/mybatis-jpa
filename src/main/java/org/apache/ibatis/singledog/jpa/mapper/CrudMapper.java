@@ -1,5 +1,8 @@
 package org.apache.ibatis.singledog.jpa.mapper;
 
+import org.apache.ibatis.singledog.jpa.annotation.CustomProvider;
+import org.apache.ibatis.singledog.jpa.generator.impl.*;
+
 import java.util.List;
 
 public interface CrudMapper<T, ID> extends Mapper<T, ID> {
@@ -11,8 +14,10 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @param entity must not be {@literal null}.
      * @return the saved entity will never be {@literal null}.
      */
+    @CustomProvider(SaveSqlGeneratorImpl.class)
     <S extends T> int save(S entity);
 
+    @CustomProvider(SaveAutoIncrementKeyGeneratorImpl.class)
     <S extends T> int saveAutoIncrementKey(S entity);
 
     /**
@@ -22,8 +27,10 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @return the saved entities will never be {@literal null}.
      * @throws IllegalArgumentException in case the given entity is {@literal null}.
      */
+    @CustomProvider(SaveAllGeneratorImpl.class)
     <S extends T> int saveAll(List<S> entities);
 
+    @CustomProvider(SaveAllAutoIncrementKeyGeneratorImpl.class)
     <S extends T> int saveAllAutoIncrementKey(List<S> entities);
 
     /**
@@ -33,6 +40,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @return the entity with the given id or {@literal Optional#empty()} if none found
      * @throws IllegalArgumentException if {@code id} is {@literal null}.
      */
+    @CustomProvider(FindByIdGeneratorImpl.class)
     T findById(ID id);
 
     /**
@@ -40,6 +48,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      *
      * @return the number of entities
      */
+    @CustomProvider(CountAllGeneratorImpl.class)
     long count();
 
     /**
@@ -48,6 +57,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @param id must not be {@literal null}.
      * @throws IllegalArgumentException in case the given {@code id} is {@literal null}
      */
+    @CustomProvider(DeleteByIdGeneratorImpl.class)
     void deleteById(ID id);
 
     /**
@@ -56,15 +66,19 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @param ids
      * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
      */
+    @CustomProvider(DeleteAllGeneratorImpl.class)
     void deleteAll(List<? extends ID> ids);
 
     /**
      * Deletes all entities managed by the repository.
      */
+    @CustomProvider(ClearGeneratorImpl.class)
     void clear();
 
+    @CustomProvider(UpdateByPrimaryKeyGeneratorIml.class)
     <S extends T> int updateByPrimaryKeySelective(S entity);
 
+    @CustomProvider(UpdateByPrimaryKeySelectiveGeneratorImpl.class)
     <S extends T> int updateByPrimaryKey(S entity);
 
     /**
@@ -72,7 +86,9 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @param <S>
      * @return
      */
+    @CustomProvider(SaveSelectiveGeneratorImpl.class)
     <S extends T> int saveSelective(S entity);
 
+    @CustomProvider(SaveSelectiveAutoIncrementGeneratorImpl.class)
     <S extends T> int saveSelectiveAutoIncrement(S entity);
 }
