@@ -12,19 +12,13 @@ import java.util.Map;
  */
 public class DeleteByIdGeneratorImpl extends AbstractSqlGenerator {
     @Override
-    public Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params) {
-        return createDeleteElement(getMethod(params), dataParser.getIdClass().getName(),
-                () -> generatorSql(dataParser, params));
-    }
-
-    @Override
     public String generatorSql(MetaDataParser dataParser, Map<String, Object> params) {
         Table table = dataParser.getTable();
         Column id = table.getSingleIdColumn();
-        return new StringBuilder()
-                .append(" delete from ").append(table.getName())
-                .append(" where ").append(id.getColumn()).append(" = #{")
-                .append(id.getProperty()).append("} ")
-                .toString();
+        return endTag(beginTag(TAG_DELETE, getMethod(params),
+                    new MapBuilder().put("parameterType", id.getJavaType()).build())
+                    .append(" delete from ").append(table.getName())
+                    .append(" where ").append(id.getColumn()).append("=#{").append(id.getProperty()).append("}"),
+                TAG_DELETE).toString();
     }
 }

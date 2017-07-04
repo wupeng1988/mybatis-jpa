@@ -15,38 +15,49 @@ import java.util.Map;
 public class SaveSqlGeneratorImpl extends AbstractSqlGenerator {
 
     @Override
-    public Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params) {
-        @SuppressWarnings("unchecked")
-        Map<String, String> attrs = new MapBuilder<String, String>()
-                .put("id", String.valueOf(params.get(PARAM_KEY_ID)))
-                .put("parameterType", dataParser.getEntityClass().getName())
-                .build();
-        return createSqlNode("insert", this.generatorSql(dataParser, params), attrs);
+    public String generatorSql(MetaDataParser dataParser, Map<String, Object> params) {
+        Column id = dataParser.getTable().getSingleIdColumn();
+        String sql = generate(dataParser, !useGenerateKeys());
+        if (useGenerateKeys())
+            return insert(getMethod(params), dataParser.getEntityClass().getName(),
+                    id.getProperty(), id.getColumn(), "true", sql);
+        else
+            return insert(getMethod(params), dataParser.getEntityClass().getName(),
+                    null, null, null, sql);
     }
 
-    @Override
-    public String generatorSql(MetaDataParser dataParser, Map<String, Object> params) {
-        return generate(dataParser, true);
+    boolean useGenerateKeys() {
+        return false;
+    }
+
+    boolean includeNull() {
+        return true;
     }
 
     public String generate(MetaDataParser dataParser, boolean includeId) {
+
         Table table = dataParser.getTable();
         StringBuilder builder = new StringBuilder();
-        builder.append(" insert into ").append(table.getName()).append(" ( ");
+        builder.append(" insert into ").append(table.getName()).append(" ");
         StringBuilder columns = new StringBuilder();
         StringBuilder values = new StringBuilder();
-        List<Column> columnList = new ArrayList<>(table.getColumns());
-        if (includeId) {
-            columnList.addAll(0, table.getIdColumns());
+        List<Column> columnList = table.getColumns(includeId);
+        if (!includeNull()) {
+            table.getColumns(!useGenerateKeys()).forEach(column -> {
+                columns.append(ifNotNull(column.getProperty(), column.getColumn() + ","));
+                values.append(ifNotNull(column.getProperty(), new StringBuilder("#{")
+                        .append(column.getProperty()).append("},").toString()));
+            });
+        } else {
+            for (Column column : columnList) {
+                columns.append(column.getColumn()).append(",");
+                values.append("#{").append(column.getProperty()).append("},");
+            }
         }
-        for (Column column : table.getColumns()) {
-            columns.append(column.getColumn()).append(",");
-            //TODO add jdbcType
-            values.append("#{").append(column.getProperty()).append("},");
-        }
-        columns.deleteCharAt(columns.length() - 1);
-        values.deleteCharAt(values.length() - 1);
-        builder.append(columns.toString()).append(") values (").append(values).append(")");
+        builder.append(trim("(",")",",", columns.toString()))
+                .append(" values ")
+                .append(trim("(",")",",", values.toString()))
+                .toString();
         return builder.toString();
     }
 }

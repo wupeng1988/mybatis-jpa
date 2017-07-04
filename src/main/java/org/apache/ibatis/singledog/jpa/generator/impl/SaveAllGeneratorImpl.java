@@ -16,35 +16,6 @@ import java.util.Map;
  */
 public class SaveAllGeneratorImpl extends AbstractSqlGenerator {
 
-    @Override
-    public Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params) {
-        Table table = dataParser.getTable();
-        Document document = createDocument();
-        Element root = document.createElement("insert");
-        root.setAttribute("id", getMethod(params));
-
-        StringBuilder keyProps = new StringBuilder();
-        StringBuilder keyColumns = new StringBuilder();
-        table.getIdColumns().forEach(column -> {
-            keyProps.append(column.getProperty()).append(",");
-            keyColumns.append(column.getColumn()).append(",");
-        });
-
-        trim(keyColumns);
-        trim(keyProps);
-
-        if (useGeneratedKeys()) {
-            root.setAttribute("useGeneratedKeys", String.valueOf(useGeneratedKeys()));
-            root.setAttribute("keyProperty", keyProps.toString());
-            root.setAttribute("keyColumn", keyColumns.toString());
-        }
-        Text insert = document.createTextNode(baseInfo(dataParser, !useGeneratedKeys()));
-        root.appendChild(insert);
-        root.appendChild(createForEachElement("item", "index", "list", "", ",", "",
-                () -> values(dataParser, !useGeneratedKeys())));
-        return root;
-    }
-
     boolean useGeneratedKeys() {
         return false;
     }
@@ -76,6 +47,22 @@ public class SaveAllGeneratorImpl extends AbstractSqlGenerator {
 
     @Override
     public String generatorSql(MetaDataParser dataParser, Map<String, Object> params) {
-        return null;
+        Table table = dataParser.getTable();
+        Column id = table.getSingleIdColumn();
+        String useGeneratedKeys = null;
+        String keyProperty = null;
+        String keyColumn = null;
+        if (useGeneratedKeys()) {
+            useGeneratedKeys = "true";
+            keyProperty = id.getProperty();
+            keyColumn = id.getColumn();
+        }
+
+        StringBuilder insert = new StringBuilder();
+        insert.append(baseInfo(dataParser, !useGeneratedKeys()))
+                .append(foreach("item,", "index", "list", "",",","",
+                        values(dataParser, !useGeneratedKeys())));
+        return insert(getMethod(params), dataParser.getEntityClass().getName(),
+                keyProperty, keyColumn, useGeneratedKeys, insert.toString());
     }
 }

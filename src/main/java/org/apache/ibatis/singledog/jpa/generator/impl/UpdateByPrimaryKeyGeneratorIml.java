@@ -12,10 +12,8 @@ import java.util.Map;
  */
 public class UpdateByPrimaryKeyGeneratorIml extends AbstractSqlGenerator {
 
-    @Override
-    public Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params) {
-        return createUpdateElement(getMethod(params), dataParser.getEntityClass().getName(),
-                () -> generatorSql(dataParser, params));
+    boolean includeNull() {
+        return true;
     }
 
     @Override
@@ -23,12 +21,23 @@ public class UpdateByPrimaryKeyGeneratorIml extends AbstractSqlGenerator {
         Table table = dataParser.getTable();
         Column id = table.getSingleIdColumn();
         StringBuilder update = new StringBuilder();
-        update.append(" update ").append(table.getName()).append(" set ");
+        update.append(" update ").append(table.getName()).append(" ");
+
+        StringBuilder columns = new StringBuilder();
         table.getColumns().forEach(column -> {
-            update.append(column.getColumn()).append(" = #{").append(column.getProperty()).append("},");
+            if (includeNull()) {
+                columns.append(column.getColumn()).append(" = #{").append(column.getProperty()).append("},");
+            } else {
+                columns.append(ifNotNull(column.getProperty(),
+                        new StringBuilder()
+                                .append(column.getColumn()).append(" = #{")
+                                .append(column.getProperty()).append("},")
+                                .toString()));
+            }
         });
-        trim(update);
-        update.append(" where ").append(id.getColumn()).append(" = #{").append(id.getProperty()).append("}");
-        return update.toString();
+
+        update.append(set(columns.toString()))
+                .append(" where ").append(id.getColumn()).append(" = #{").append(id.getProperty()).append("}");
+        return update(getMethod(params), dataParser.getEntityClass().getName(), update.toString());
     }
 }

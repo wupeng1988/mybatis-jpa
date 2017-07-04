@@ -13,12 +13,4 @@ public interface JpaMapper<T, ID> extends PagingAndSortingMapper<T, ID> {
      */
     List<T> findAllById(List<ID> ids);
 
-    /**
-     * Returns a reference to the entity with the given identifier.
-     *
-     * @param id must not be {@literal null}.
-     * @return a reference to the entity with the given identifier.
-     * @see EntityManager#getReference(Class, Object)
-     */
-    T getOne(ID id);
 }

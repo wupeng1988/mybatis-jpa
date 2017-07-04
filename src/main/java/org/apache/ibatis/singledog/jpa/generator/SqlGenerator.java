@@ -12,15 +12,7 @@ public interface SqlGenerator {
     String PARAM_KEY_ID = "id";
 
     /**
-     * generate xml select node. select | update | insert | delete
-     * @param dataParser
-     * @param params
-     * @return
-     */
-    Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params);
-
-    /**
-     * generate xml select content.
+     * generate xml select node. select | update | insert | delete sql
      * @param dataParser
      * @param params
      * @return

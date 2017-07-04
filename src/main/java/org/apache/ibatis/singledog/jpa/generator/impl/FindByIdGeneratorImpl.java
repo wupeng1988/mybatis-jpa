@@ -13,21 +13,12 @@ import java.util.Map;
 public class FindByIdGeneratorImpl extends AbstractSqlGenerator {
 
     @Override
-    public Element generateSqlNode(MetaDataParser dataParser, Map<String, Object> params) {
-        return createSelectElement(getMethod(params), dataParser.getIdClass().getName(), null,
-                MetaDataParser.DEFAULT_RESULT_MAP, () -> generatorSql(dataParser, params));
-    }
-
-    @Override
     public String generatorSql(MetaDataParser dataParser, Map<String, Object> params) {
         Table table = dataParser.getTable();
         Column id = table.getSingleIdColumn();
-        return new StringBuilder()
-                .append("select ").append(table.getAllColumns())
-                .append(" from ")
-                .append(table.getName())
-                .append(" where ")
-                .append(id.getColumn()).append(" = #{").append(id.getProperty()).append("} ")
-                .toString();
+        StringBuilder select = new StringBuilder();
+        select.append(" select ").append(table.getAllColumns()).append(" from ").append(table.getName())
+                .append(" where ").append(id.getColumn()).append("=#{").append(id.getProperty()).append("}");
+        return select(getMethod(params), id.getJavaType(), null, null, select.toString());
     }
 }

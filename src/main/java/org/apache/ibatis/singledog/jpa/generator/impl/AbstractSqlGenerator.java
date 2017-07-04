@@ -1,15 +1,11 @@
 package org.apache.ibatis.singledog.jpa.generator.impl;
 
+import org.apache.ibatis.singledog.jpa.generator.MetaDataParser;
 import org.apache.ibatis.singledog.jpa.generator.SqlGenerator;
 import org.apache.ibatis.utils.CollectionUtils;
 import org.apache.ibatis.utils.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -17,15 +13,21 @@ import java.util.Map;
  */
 public abstract class AbstractSqlGenerator implements SqlGenerator {
 
-    Document createDocument() {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            return builder.newDocument();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final String NEW_LINE = "\n";
+
+    public static final String TAG_DELETE = "delete";
+    public static final String TAG_INSERT = "insert";
+    public static final String TAG_UPDATE = "update";
+    public static final String TAG_SELECT = "select";
+    public static final String TAG_WHERE = "where";
+    public static final String TAG_IF = "if";
+    public static final String TAG_FOREACH = "foreach";
+    public static final String TAG_SQL = "sql";
+    public static final String TAG_TRIM = "trim";
+    public static final String TAG_SET = "set";
+    public static final String TAG_CHOOSE = "choose";
+    public static final String TAG_WHEN = "when";
+    public static final String TAG_OTHERWISE = "otherwise";
 
     String getMethod(Map<String, Object> params) {
         return String.valueOf(params.get(PARAM_KEY_ID));
@@ -36,117 +38,126 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
             builder.deleteCharAt(builder.length() - 1);
     }
 
-    Element createSqlNode(String tagName, String originalSql, Map<String, String> attrs) {
-        try {
-            Document document = createDocument();
-            Element root = document.createElement(tagName);
-            Text sqlNode = document.createTextNode(originalSql);
-            root.appendChild(sqlNode);
-            if (!CollectionUtils.isEmpty(attrs)) {
-                attrs.forEach(root::setAttribute);
-            }
-            return root;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    String wrapProperty(String property) {
+        return new StringBuilder("#{").append(property).append("}").toString();
     }
 
-    static class MapBuilder<K, V> {
-        private Map<K, V> map = new HashMap<>();
+    String createSqlStatement(String id, String originalSql) {
+        return new StringBuilder().append("<sql id=\"").append(id).append("\">").append(NEW_LINE)
+                .append(originalSql).append(NEW_LINE)
+                .append("</sql>").toString();
+    }
 
-        public MapBuilder put(K k, V v) {
+    static class MapBuilder {
+        private Map<String, String> map = new LinkedHashMap<>();
+
+        public MapBuilder put(String k, String v) {
             map.put(k, v);
             return this;
         }
 
-        public Map<K, V> build() {
+        public Map<String, String> build() {
             return map;
         }
 
     }
 
-    Element createInsertElement(String id, String parameterType, String keyProperty,
-                                       String keyColumn, Boolean useGeneratedKeys, TextProvider provider) {
-
-        Document document = createDocument();
-        Element root = document.createElement("insert");
-        root.setAttribute("id", id);
-        root.setAttribute("parameterType", parameterType);
-        if (!StringUtils.isEmpty(keyProperty))
-            root.setAttribute("keyProperty", keyProperty);
-        if (!StringUtils.isEmpty(keyColumn))
-            root.setAttribute("keyColumn", keyColumn);
-        if (useGeneratedKeys != null)
-            root.setAttribute("useGeneratedKeys", String.valueOf(useGeneratedKeys));
-        Text text = document.createTextNode(provider.getText());
-        root.appendChild(text);
-        return root;
+    void appendAttrs(StringBuilder builder, Map<String, String> attrs) {
+        if (!CollectionUtils.isEmpty(attrs)) {
+            attrs.forEach((k,v) -> {
+                builder.append(" ").append(k).append(" = \"").append(v).append("\" ");
+            });
+        }
     }
 
-    Element createForEachElement(String item, String index, String collection,
-                                        String open, String separate, String close, TextProvider provider) {
-        Document document = createDocument();
-        Element root = document.createElement("foreach");
-        root.setAttribute("item", item);
-        root.setAttribute("index", index);
-        root.setAttribute("collection", collection);
-        root.setAttribute("open", open);
-        root.setAttribute("separator", separate);
-        root.setAttribute("close", close);
-        Text text = document.createTextNode(provider.getText());
-        root.appendChild(text);
-        return root;
+    String createNode(String tag, String id, String rawContent, Map<String, String> attrs) {
+        return endTag(beginTag(tag, id, attrs).append(rawContent), tag).toString();
     }
 
-    Element createSelectElement(String id, String parameterType, String resultType,
-                                       String resultMap, TextProvider provider) {
-        Document document = createDocument();
-        Element root = document.createElement("select");
-        root.setAttribute("id", id);
+    StringBuilder beginTag(String tag, String id, Map<String, String> attrs) {
+        return beginTag(new StringBuilder(), tag, id, attrs);
+    }
+
+    StringBuilder beginTag(StringBuilder builder, String tag, String id, Map<String, String> attrs) {
+        builder.append("<").append(tag);
+        if (!StringUtils.isEmpty(id))
+            builder.append(" id = \"").append(id).append("\" ");
+        appendAttrs(builder, attrs);
+        builder.append(">").append(NEW_LINE);
+        return builder;
+    }
+
+    StringBuilder endTag(StringBuilder builder, String tag) {
+        return builder.append(NEW_LINE).append("</").append(tag).append(">");
+    }
+
+    String foreach(String item, String index, String collection, String open,
+                   String separator, String close, String sql) {
+        return createNode("foreach", null, sql, new MapBuilder()
+                .put("item", item)
+                .put("index", index)
+                .put("collection", collection)
+                .put("open", open)
+                .put("separator", separator)
+                .put("close", close)
+                .build());
+    }
+
+    String select(String id, String parameterType, String resultType, String resultMap, String sql) {
+        MapBuilder builder = new MapBuilder();
+        builder.put("id", id);
         if (!StringUtils.isEmpty(parameterType))
-            root.setAttribute("parameterType", parameterType);
+            builder.put("parameterType", parameterType);
         if (!StringUtils.isEmpty(resultType))
-            root.setAttribute("resultType", resultType);
+            builder.put("resultType", resultType);
         if (!StringUtils.isEmpty(resultMap))
-            root.setAttribute("resultMap", resultMap);
-        root.appendChild(document.createTextNode(provider.getText()));
-        return root;
+            builder.put("resultMap", resultMap);
+        if (StringUtils.isEmpty(resultType) && StringUtils.isEmpty(resultMap))
+            builder.put("resultMap", MetaDataParser.DEFAULT_RESULT_MAP);
+        return createNode(TAG_SELECT, id, sql, builder.build());
     }
 
-    Element createDeleteElement(String id, String parameterType, TextProvider provider) {
-        Document document = createDocument();
-        Element root = document.createElement("delete");
-        root.setAttribute("id", id);
+    String insert(String id, String parameterType, String keyProperty, String keyColumn,
+                  String useGeneratedKeys, String sql) {
+        MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
-            root.setAttribute("parameterType", parameterType);
-        root.appendChild(document.createTextNode(provider.getText()));
-        return root;
+            builder.put("parameterType", parameterType);
+        if (!StringUtils.isEmpty(keyProperty))
+            builder.put("keyProperty", keyProperty);
+        if (!StringUtils.isEmpty(keyColumn))
+            builder.put("keyColumn", keyColumn);
+        if (!StringUtils.isEmpty(useGeneratedKeys))
+            builder.put("useGeneratedKeys", useGeneratedKeys);
+        return createNode(TAG_INSERT, id, sql, builder.build());
     }
 
-    Element createUpdateElement(String id, String parameterType, TextProvider provider) {
-        Document document = createDocument();
-        Element root = document.createElement("update");
-        root.setAttribute("id", id);
+    String ifNotNull(String column, String sql) {
+        return createNode(TAG_IF, null, sql, new MapBuilder().put("test", column + " != null").build());
+    }
+
+    String trim(String prefix, String suffix, String suffixOverrides, String sql) {
+        return createNode(TAG_TRIM, null, sql, new MapBuilder()
+                .put("prefix", prefix)
+                .put("suffix", suffix)
+                .put("suffixOverrides", suffixOverrides)
+                .build());
+    }
+
+    String set(String sql) {
+        return createNode(TAG_SET, null, sql, null);
+    }
+
+    String delete(String id, String parameterType, String sql) {
+        MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
-            root.setAttribute("parameterType", parameterType);
-        root.appendChild(document.createTextNode(provider.getText()));
-        return root;
+            builder.put("parameterType", parameterType);
+        return createNode(TAG_DELETE, id, sql, builder.build());
     }
 
-    Element createIfElement(String test, TextProvider provider) {
-        Document document = createDocument();
-        Element root = document.createElement("if");
-        root.setAttribute("test", test);
-        root.appendChild(document.createTextNode(provider.getText()));
-        return root;
+    String update(String id, String parameterType, String sql) {
+        MapBuilder builder = new MapBuilder();
+        if (!StringUtils.isEmpty(parameterType))
+            builder.put("parameterType", parameterType);
+        return createNode(TAG_UPDATE, id, sql, builder.build());
     }
-
-    Element createIfNotNullElement(String property, TextProvider provider) {
-        return createIfElement(property + " != null", provider);
-    }
-
-    interface TextProvider {
-        String getText();
-    }
-
 }
