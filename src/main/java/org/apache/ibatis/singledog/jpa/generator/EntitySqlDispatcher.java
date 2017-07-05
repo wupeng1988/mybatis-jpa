@@ -36,7 +36,9 @@ public class EntitySqlDispatcher {
     }
 
     private void addMetaDataParser(MetaDataParser parser) {
-        metaDataParserMap.put(parser.getEntityClass(), parser);
+        synchronized (metaDataParserMap) {
+            metaDataParserMap.put(parser.getEntityClass(), parser);
+        }
     }
 
 

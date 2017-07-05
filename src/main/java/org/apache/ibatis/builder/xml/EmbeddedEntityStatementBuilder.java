@@ -25,8 +25,13 @@ import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.singledog.jpa.annotation.CustomProvider;
 import org.apache.ibatis.singledog.jpa.generator.MetaDataParser;
+import org.apache.ibatis.utils.AnnotationUtils;
+import org.apache.ibatis.utils.ReflectionUtils;
 import org.apache.ibatis.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -36,40 +41,36 @@ import java.util.Locale;
  * @author Clinton Begin
  */
 public class EmbeddedEntityStatementBuilder extends BaseBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(EmbeddedEntityStatementBuilder.class);
 
     private final MapperBuilderAssistant builderAssistant;
     private final Class entityClass;
-    private final String requiredDatabaseId;
+    private final Class mapperClass;
 
-    public EmbeddedEntityStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, Class entityClass) {
-        this(configuration, builderAssistant, entityClass, null);
-    }
-
-    public EmbeddedEntityStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, Class entityClass, String databaseId) {
+    public EmbeddedEntityStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, Class entityClass, Class mapperClass) {
         super(configuration);
         this.builderAssistant = builderAssistant;
         this.entityClass = entityClass;
-        this.requiredDatabaseId = databaseId;
+        this.mapperClass = mapperClass;
     }
 
-    public void parseStatementNode() {
-        //TODO
-    }
+
 
     public void parseMethodStatement(Method method) {
         //TODO
 
-        /*String id = context.getStringAttribute("id");
-        String databaseId = context.getStringAttribute("databaseId");
+        String id = method.getName();
 
-        if (!databaseIdMatchesCurrent(id, databaseId, this.requiredDatabaseId)) {
-            return;
+        Integer fetchSize = null;
+        Integer timeout = null;
+        String parameterMap = null;
+        String parameterType = null;
+        int paramCount = method.getParameterCount();
+        if (paramCount == 1) {
+            parameterType = method.getParameterTypes()[0].getName();
+        } else if (paramCount > 1){
+            parameterType = "map";
         }
-
-        Integer fetchSize = context.getIntAttribute("fetchSize");
-        Integer timeout = context.getIntAttribute("timeout");
-        String parameterMap = context.getStringAttribute("parameterMap");
-        String parameterType = context.getStringAttribute("parameterType");
         Class<?> parameterTypeClass = resolveClass(parameterType);
         String resultMap = context.getStringAttribute("resultMap");
         String resultType = context.getStringAttribute("resultType");
@@ -118,7 +119,7 @@ public class EmbeddedEntityStatementBuilder extends BaseBuilder {
         builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
                 fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
                 resultSetTypeEnum, flushCache, useCache, resultOrdered,
-                keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSets);*/
+                keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSets);
     }
 
 

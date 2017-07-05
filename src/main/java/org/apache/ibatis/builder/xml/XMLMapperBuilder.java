@@ -24,12 +24,14 @@ import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.parsing.XPathParser;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.singledog.jpa.annotation.CustomProvider;
 import org.apache.ibatis.singledog.jpa.generator.EntitySqlDispatcher;
 import org.apache.ibatis.singledog.jpa.mapper.Mapper;
 import org.apache.ibatis.singledog.jpa.meta.Column;
 import org.apache.ibatis.singledog.jpa.meta.Table;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+import org.apache.ibatis.utils.ReflectionUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -119,15 +121,22 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (this.enabledJpaFeatures) {
                 embeddedEntityResultMap(this.entityClass);
                 embeddedEntitySql(this.entityClass);
-                EmbeddedEntityStatementBuilder builder = new EmbeddedEntityStatementBuilder(configuration, builderAssistant, entityClass);
-                builder.parseStatementNode();
             }
             buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
             if (this.enabledJpaFeatures)
-                buildStatementFromEntity(this.entityClass);
+                embeddedEntityStatement();
         } catch (Exception e) {
             throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
         }
+    }
+
+    private void embeddedEntityStatement() throws ClassNotFoundException {
+        Class mapperClass = Class.forName(builderAssistant.getCurrentNamespace());
+        ReflectionUtils.doWithMethods(entityClass, method -> {
+            if (method.isAnnotationPresent(CustomProvider.class)) {
+
+            }
+        });
     }
 
 
@@ -165,10 +174,6 @@ public class XMLMapperBuilder extends BaseBuilder {
                 configuration.addIncompleteStatement(statementParser);
             }
         }
-    }
-
-    private void buildStatementFromEntity(Class entityClass) {
-
     }
 
     private void parsePendingResultMaps() {

@@ -12,6 +12,10 @@ public abstract class AnnotationUtils {
         return element.getAnnotation(annotationType);
     }
 
+    public static <T extends Annotation> boolean hasAnnotation(AnnotatedElement element, Class<T> annotationType) {
+        return element.isAnnotationPresent(annotationType);
+    }
+
     public static Annotation[] getAnnotations(AnnotatedElement element) {
         return element.getAnnotations();
     }
