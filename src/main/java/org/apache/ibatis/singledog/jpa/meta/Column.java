@@ -1,3 +1,18 @@
+/**
+ *    Copyright 2009-2017 the original author or authors.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 package org.apache.ibatis.singledog.jpa.meta;
 
 import org.apache.ibatis.mapping.ResultFlag;
@@ -49,7 +64,9 @@ public final class Column {
             this.length = column.length();
             this.type = column.type();
             this.scale = column.scale();
-        } else if (isId) {
+        }
+
+        if (StringUtils.isEmpty(this.column)) {
             this.column = StringUtils.humpToUnderScore(this.property);
         }
 
@@ -164,5 +181,16 @@ public final class Column {
                 .nestedResultMapId(resultMapId)
                 .flags(flags)
                 .build();
+    }
+
+    public String toResultMappingXml() {
+        StringBuilder builder = new StringBuilder();
+        String tag = "result";
+        if (isId())
+            tag = "id";
+        builder.append("<").append(tag).append(" column=\"").append(getColumn())
+                .append("\" property=\"").append(getProperty()).append("\" />");
+
+        return builder.toString();
     }
 }
