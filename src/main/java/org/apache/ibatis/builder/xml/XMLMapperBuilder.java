@@ -113,7 +113,7 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (Mapper.class.isAssignableFrom(namespaceClass)) {
                 this.enabledJpaFeatures = true;
                 findMetaClass(namespaceClass);
-                EntitySqlDispatcher.getInstance().parseEntity(this.entityClass, this.idClass, configuration);
+                EntitySqlDispatcher.getInstance().parseEntity(this.entityClass, this.idClass, configuration, namespace);
             }
 
             builderAssistant.setCurrentNamespace(namespace);
@@ -146,7 +146,7 @@ public class XMLMapperBuilder extends BaseBuilder {
                     XPathParser parser = new XPathParser(StringUtils.xmlDeclare(sql), false, configuration.getVariables(), new XMLMapperEntityResolver());
                     buildStatementFromContext(parser.evalNodes("select|insert|update|delete"));
                 } catch (InstantiationException e) {
-                    e.printStackTrace();
+                    throw new BuilderException("Error loading entity sql. Cause: " + e, e);
                 }
             }
         });

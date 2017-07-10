@@ -15,9 +15,11 @@
  */
 package org.apache.ibatis.singledog.jpa.mapper;
 
+import org.apache.ibatis.annotations.SelectProvider;
 import org.apache.ibatis.singledog.jpa.domain.Page;
 import org.apache.ibatis.singledog.jpa.domain.Pageable;
 import org.apache.ibatis.singledog.jpa.domain.Sort;
+import org.apache.ibatis.singledog.jpa.generator.provider.PagingAndSortingProvider;
 
 import java.util.List;
 
@@ -29,6 +31,7 @@ public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
 	 * @param sort
 	 * @return all entities sorted by the given options
 	 */
+	@SelectProvider(type = PagingAndSortingProvider.class, method = "findAll")
 	List<T> findAll(Sort sort);
 
 	/**

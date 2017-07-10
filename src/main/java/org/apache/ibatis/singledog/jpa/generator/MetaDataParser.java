@@ -44,11 +44,13 @@ public class MetaDataParser {
     private Table table;
     private String resultMap;
     private Configuration configuration;
+    private String mapper;
 
-    public MetaDataParser(Class entityClass, Class idClass, Configuration configuration) {
+    public MetaDataParser(Class entityClass, Class idClass, Configuration configuration, String mapper) {
         this.entityClass = entityClass;
         this.configuration = configuration;
         this.idClass = idClass;
+        this.mapper = mapper;
     }
 
     public Class getEntityClass() {
@@ -117,6 +119,10 @@ public class MetaDataParser {
 
     public Class getIdClass() {
         return idClass;
+    }
+
+    public String getMapper() {
+        return mapper;
     }
 
     public Configuration getConfiguration() {

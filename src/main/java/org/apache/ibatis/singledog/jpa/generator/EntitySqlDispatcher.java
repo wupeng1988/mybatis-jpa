@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntitySqlDispatcher {
 
     private static final Map<Class, MetaDataParser> metaDataParserMap = new ConcurrentHashMap<Class, MetaDataParser>();
+    private static final Map<String, MetaDataParser> namespaceDataParserMap = new ConcurrentHashMap<String, MetaDataParser>();
 
     private static final EntitySqlDispatcher instance = new EntitySqlDispatcher();
 
@@ -35,10 +36,10 @@ public class EntitySqlDispatcher {
         return instance;
     }
 
-    public MetaDataParser parseEntity(Class clazz, Class idClass, Configuration configuration) {
+    public MetaDataParser parseEntity(Class clazz, Class idClass, Configuration configuration, String mapper) {
         MetaDataParser metaDataParser = getMetaDataParser(clazz);
         if (metaDataParser == null) {
-            metaDataParser = new MetaDataParser(clazz, idClass, configuration);
+            metaDataParser = new MetaDataParser(clazz, idClass, configuration, mapper);
             metaDataParser.parse();
             addMetaDataParser(metaDataParser);
         }
@@ -50,9 +51,16 @@ public class EntitySqlDispatcher {
         return metaDataParserMap.get(clazz);
     }
 
+    public MetaDataParser getMetaDataParser(String namespace) {
+        return metaDataParserMap.get(namespace);
+    }
+
     private void addMetaDataParser(MetaDataParser parser) {
         synchronized (metaDataParserMap) {
             metaDataParserMap.put(parser.getEntityClass(), parser);
+        }
+        synchronized (namespaceDataParserMap) {
+            namespaceDataParserMap.put(parser.getMapper(), parser);
         }
     }
 
