@@ -108,7 +108,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
 
     String foreach(String item, String index, String collection, String open,
                    String separator, String close, String sql) {
-        return createNode("foreach", null, sql, new MapBuilder()
+        return createNode(TAG_FOREACH, null, sql, new MapBuilder()
                 .put("item", item)
                 .put("index", index)
                 .put("collection", collection)
