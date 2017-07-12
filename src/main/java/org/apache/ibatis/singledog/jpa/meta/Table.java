@@ -39,6 +39,16 @@ public final class Table {
     private List<Column> idColumns;
     private List<SqlSegment> sqlSegments = new ArrayList<>();
     private Map<String, SqlSegment> sqlSegmentsMap;
+    private Map<String, String> propertyColumnMap = new HashMap<>();
+    private Map<String, String> columnPropertyMap = new HashMap<>();
+
+    public String getColumnByProperty(String property) {
+        return propertyColumnMap.get(property);
+    }
+
+    public String getPropertyByColumn(String column) {
+        return columnPropertyMap.get(column);
+    }
 
     public List<Column> getColumns(boolean withId) {
         List<Column> columnList = new ArrayList<>(this.columns);
@@ -122,7 +132,7 @@ public final class Table {
         return this.sqlSegmentsMap.get(ALL_COLUMNS).getSql();
     }
 
-    public void afterPropertiesSet() {
+    public synchronized void afterPropertiesSet() {
         StringBuilder builder = new StringBuilder();
 
         if (!CollectionUtils.isEmpty(this.idColumns)) {
@@ -139,6 +149,10 @@ public final class Table {
         sqlSegments.add(new SqlSegment(ALL_COLUMNS, builder.toString()));
         sqlSegments.add(new SqlSegment(ALL_COLUMNS_UPPERCASE, builder.toString()));
         sqlSegmentsMap = sqlSegments.stream().collect(Collectors.toMap(SqlSegment::getId, s -> s));
+        this.getColumns(true).forEach(column -> {
+            propertyColumnMap.put(column.getProperty(), column.getColumn());
+            columnPropertyMap.put(column.getColumn(), column.getProperty());
+        });
     }
 
     public ResultMap toResultMap(Configuration configuration, String resultMapId) {

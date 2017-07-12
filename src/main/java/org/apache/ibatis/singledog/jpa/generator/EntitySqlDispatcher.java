@@ -52,7 +52,7 @@ public class EntitySqlDispatcher {
     }
 
     public MetaDataParser getMetaDataParser(String namespace) {
-        return metaDataParserMap.get(namespace);
+        return namespaceDataParserMap.get(namespace);
     }
 
     private void addMetaDataParser(MetaDataParser parser) {
