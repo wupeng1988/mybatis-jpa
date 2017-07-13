@@ -46,8 +46,16 @@ public final class Table {
         return propertyColumnMap.get(property);
     }
 
+    public boolean propertyExists(String property) {
+        return propertyColumnMap.containsKey(property);
+    }
+
     public String getPropertyByColumn(String column) {
         return columnPropertyMap.get(column);
+    }
+
+    public boolean columnExists(String column) {
+        return this.columnPropertyMap.containsKey(column);
     }
 
     public List<Column> getColumns(boolean withId) {

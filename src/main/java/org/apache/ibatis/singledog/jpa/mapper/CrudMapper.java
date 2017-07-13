@@ -16,6 +16,7 @@
 package org.apache.ibatis.singledog.jpa.mapper;
 
 import org.apache.ibatis.singledog.jpa.annotation.CustomProvider;
+import org.apache.ibatis.singledog.jpa.domain.Example;
 import org.apache.ibatis.singledog.jpa.generator.impl.*;
 
 import java.util.List;
@@ -106,4 +107,13 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
 
     @CustomProvider(SaveSelectiveAutoIncrementGeneratorImpl.class)
     <S extends T> int saveSelectiveAutoIncrement(S entity);
+
+    @CustomProvider(SelectByEntityImpl.class)
+    T selectOne(T example);
+
+    @CustomProvider(SelectByEntityImpl.class)
+    List<T> selectList(T example);
+
+    @CustomProvider(SelectByExampleImpl.class)
+    List<T> selectByExample(Example<T> example);
 }

@@ -174,4 +174,12 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
             builder.put("parameterType", parameterType);
         return createNode(TAG_UPDATE, id, sql, builder.build());
     }
+
+    String where(String rawContent) {
+        return createNode(TAG_WHERE, null, rawContent, null);
+    }
+
+    String include(String refId) {
+        return " <include refid=\"" + refId + "\" />";
+    }
 }
