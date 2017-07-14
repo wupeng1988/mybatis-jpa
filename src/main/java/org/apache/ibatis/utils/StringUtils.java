@@ -1221,4 +1221,8 @@ public abstract class StringUtils {
     public static String xmlDeclare(String content) {
         return "<?xml version=\"1.0\" encoding=\"utf-8\"?> \n".concat(content);
     }
+
+    public static boolean isNotEmpty(String string) {
+        return !isEmpty(string);
+    }
 }
