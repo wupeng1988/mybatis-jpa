@@ -1,27 +1,18 @@
-/*
- * The MIT License (MIT)
+/**
+ *    Copyright 2009-2017 the original author or authors.
  *
- * Copyright (c) 2014-2017 abel533@gmail.com
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
-
 package org.apache.ibatis.singledog.jpa.plugins.pagination;
 
 import org.apache.ibatis.cache.CacheKey;
@@ -29,15 +20,25 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.singledog.jpa.cache.Cache;
 import org.apache.ibatis.singledog.jpa.cache.SimpleCache;
+import org.apache.ibatis.singledog.jpa.domain.Page;
+import org.apache.ibatis.singledog.jpa.domain.PageImpl;
+import org.apache.ibatis.singledog.jpa.domain.Pageable;
+import org.apache.ibatis.singledog.jpa.plugins.pagination.dialect.AbstractDialect;
 import org.apache.ibatis.singledog.jpa.plugins.pagination.dialect.Dialect;
 import org.apache.ibatis.singledog.jpa.plugins.pagination.dialect.MySqlDialect;
+import org.apache.ibatis.utils.ReflectionUtils;
+import org.apache.ibatis.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +59,12 @@ import java.util.Properties;
     }
 )
 public class PageInterceptor implements Interceptor {
+    private static final Logger logger = LoggerFactory.getLogger(PageInterceptor.class);
+
     //缓存count查询的ms
     private Cache<String, MappedStatement> msCountMap = new SimpleCache<>();
+    private Cache<String, Class> returnTypeCache = new SimpleCache<>();
+
     private Dialect dialect = new MySqlDialect();
     private Field additionalParametersField;
     private String countSuffix = "_COUNT";
@@ -85,28 +90,83 @@ public class PageInterceptor implements Interceptor {
             boundSql = (BoundSql) args[5];
         }
         List resultList;
-        //调用方法判断是否需要进行分页，如果不需要，直接返回结果
-        if (dialect.isPageQuery(ms, parameter, rowBounds)) {
-            //反射获取动态参数
+
+        Pageable pageable = dialect.processPageParam(ms, parameter);
+        if (pageable != null) {
+            logger.info("statement {} is a page query !", ms.getId());
             String msId = ms.getId();
             Configuration configuration = ms.getConfiguration();
             Map<String, Object> additionalParameters = (Map<String, Object>) additionalParametersField.get(boundSql);
-            //判断是否需要进行 count 查询
-            Long count = getCountNum(ms, parameter, rowBounds, resultHandler, executor, boundSql, msId, configuration);
-
-            //判断是否需要进行分页查询
-            resultList = getPaginationList(ms, parameter, rowBounds, resultHandler, executor, cacheKey, boundSql, configuration, additionalParameters);
+            //query list for page
+            resultList = getPaginationList(ms, parameter, rowBounds, resultHandler, executor, cacheKey, boundSql,
+                    configuration, additionalParameters, pageable);
+            if (isReturnPage(ms, invocation.getMethod())) {
+                Long count = getCountNum(ms, parameter, rowBounds, resultHandler, executor, boundSql, msId, configuration);
+                return new PageImpl(resultList, pageable, count);
+            }
+            return resultList;
+        } else if (dialect.isSortQuery(ms, parameter, rowBounds)) {
+            logger.info("statement {} is sort query !", ms.getId());
+            Configuration configuration = ms.getConfiguration();
+            Map<String, Object> additionalParameters = (Map<String, Object>) additionalParametersField.get(boundSql);
+            resultList = getSortedList(ms, parameter, rowBounds, resultHandler, executor, cacheKey, boundSql, configuration, additionalParameters);
             return resultList;
         } else {
             return invocation.proceed();
         }
     }
 
-    private List getPaginationList(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, Executor executor, CacheKey cacheKey, BoundSql boundSql, Configuration configuration, Map<String, Object> additionalParameters) throws SQLException {
+    private boolean isReturnPage(MappedStatement ms, Object paramObject) {
+        String key = ms.getId();
+        Class type = returnTypeCache.get(key);
+        if (type == null) {
+            try {
+                Class mapperClass = Class.forName(ms.getNamespace());
+                String methodName = ms.getId().substring(ms.getId().lastIndexOf(".") + 1);
+                if (paramObject instanceof Pageable) {
+                    Method method = mapperClass.getDeclaredMethod(methodName, Pageable.class);
+                    type = method.getReturnType();
+                } else if (paramObject instanceof Map) {
+                    Method method = mapperClass.getDeclaredMethod(methodName, (Class[]) ((Map) paramObject).get(ParamNameResolver.ARGS_TYPES_ARRAY));
+                    type = method.getReturnType();
+                }
+            } catch (Exception e) {
+                logger.error("can not parse return type for method: {}", ms.getId());
+                logger.error(e.getMessage(), e);
+            }
+
+            if (type == null)
+                type = List.class;
+            returnTypeCache.put(key, type);
+        }
+
+        return Page.class.isAssignableFrom(type);
+    }
+
+    private List getSortedList(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, Executor executor, CacheKey cacheKey, BoundSql boundSql, Configuration configuration, Map<String, Object> additionalParameters) throws SQLException {
+        List resultList;//生成分页的缓存 key
+        //调用方言获取分页 sql
+        String sortedSql = dialect.getSortSql(ms, boundSql, parameter, rowBounds, cacheKey);
+        logger.info("sorted sql is : {}, for statement: {}", sortedSql, ms.getId());
+        BoundSql pageBoundSql = new BoundSql(configuration, sortedSql, boundSql.getParameterMappings(), parameter);
+        //设置动态参数
+        for (String key : additionalParameters.keySet()) {
+            pageBoundSql.setAdditionalParameter(key, additionalParameters.get(key));
+        }
+        //执行分页查询
+        resultList = executor.query(ms, parameter, RowBounds.DEFAULT, resultHandler, cacheKey, pageBoundSql);
+        return resultList;
+    }
+
+    private List getPaginationList(MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                   ResultHandler resultHandler, Executor executor, CacheKey cacheKey,
+                                   BoundSql boundSql, Configuration configuration, Map<String, Object> additionalParameters,
+                                   Pageable pageable) throws SQLException {
         List resultList;//生成分页的缓存 key
         CacheKey pageKey = cacheKey;
         //调用方言获取分页 sql
-        String pageSql = dialect.getPageSql(ms, boundSql, parameter, rowBounds, pageKey);
+        String pageSql = dialect.getPageSql(ms, boundSql, pageable, rowBounds, pageKey);
+        logger.info("page sql for ms {} is : {}", ms.getId(), pageSql);
         BoundSql pageBoundSql = new BoundSql(configuration, pageSql, boundSql.getParameterMappings(), parameter);
         //设置动态参数
         for (String key : additionalParameters.keySet()) {
@@ -218,6 +278,17 @@ public class PageInterceptor implements Interceptor {
 
     @Override
     public void setProperties(Properties properties) {
+        String dialectClass = properties.getProperty("dialect");
+        if (StringUtils.isEmpty(dialectClass)) {
+            this.dialect = new MySqlDialect();
+        } else {
+            try {
+                this.dialect = (Dialect) Class.forName(dialectClass).newInstance();
+            } catch (Exception e) {
+                logger.error("can not create instance of {}", dialectClass);
+                throw new RuntimeException(e);
+            }
+        }
         //反射获取 BoundSql 中的 additionalParameters 属性
         try {
             additionalParametersField = BoundSql.class.getDeclaredField("additionalParameters");

@@ -74,7 +74,7 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @throws IllegalArgumentException in case the given {@code id} is {@literal null}
      */
     @CustomProvider(DeleteByIdGeneratorImpl.class)
-    void deleteById(ID id);
+    int deleteById(ID id);
 
     /**
      * Deletes the given entities.
@@ -83,13 +83,13 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
      * @throws IllegalArgumentException in case the given {@link Iterable} is {@literal null}.
      */
     @CustomProvider(DeleteAllGeneratorImpl.class)
-    void deleteAll(List<? extends ID> ids);
+    int deleteAll(List<? extends ID> ids);
 
     /**
      * Deletes all entities managed by the repository.
      */
     @CustomProvider(ClearGeneratorImpl.class)
-    void clear();
+    int clear();
 
     @CustomProvider(UpdateByPrimaryKeyGeneratorIml.class)
     <S extends T> int updateByPrimaryKeySelective(S entity);

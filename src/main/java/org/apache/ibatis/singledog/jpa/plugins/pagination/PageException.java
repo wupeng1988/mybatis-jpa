@@ -13,16 +13,25 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.singledog.jpa.cache;
+package org.apache.ibatis.singledog.jpa.plugins.pagination;
 
 /**
- * Simple cache interface
- *
- * @author liuzh
+ * 分页插件异常
  */
-public interface Cache<K, V> {
+public class PageException extends RuntimeException {
+    public PageException() {
+        super();
+    }
 
-    V get(K key);
+    public PageException(String message) {
+        super(message);
+    }
 
-    void put(K key, V value);
+    public PageException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public PageException(Throwable cause) {
+        super(cause);
+    }
 }

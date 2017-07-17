@@ -80,7 +80,8 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
     void appendAttrs(StringBuilder builder, Map<String, String> attrs) {
         if (!CollectionUtils.isEmpty(attrs)) {
             attrs.forEach((k,v) -> {
-                builder.append(" ").append(k).append(" = \"").append(v).append("\" ");
+                if (v != null)
+                    builder.append(" ").append(k).append(" = \"").append(v).append("\" ");
             });
         }
     }

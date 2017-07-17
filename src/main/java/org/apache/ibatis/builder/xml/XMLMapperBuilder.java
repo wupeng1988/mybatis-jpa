@@ -36,6 +36,8 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.utils.ReflectionUtils;
 import org.apache.ibatis.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -47,6 +49,7 @@ import java.util.*;
  * @author Clinton Begin
  */
 public class XMLMapperBuilder extends BaseBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(XMLMapperBuilder.class);
 
     private final XPathParser parser;
     private final MapperBuilderAssistant builderAssistant;
@@ -143,6 +146,7 @@ public class XMLMapperBuilder extends BaseBuilder {
                     Map<String, Object> map = new HashMap<>();
                     map.put(SqlGenerator.PARAM_KEY_ID, method.getName());
                     String sql = generator.generatorSql(EntitySqlDispatcher.getInstance().getMetaDataParser(entity), map);
+                    logger.debug("parsing embedded statement, sql: {}, generator: {}", sql, generator);
                     XPathParser parser = new XPathParser(StringUtils.xmlDeclare(sql), false, configuration.getVariables(), new XMLMapperEntityResolver());
                     buildStatementFromContext(parser.evalNodes("select|insert|update|delete"));
                 } catch (InstantiationException e) {
@@ -399,6 +403,7 @@ public class XMLMapperBuilder extends BaseBuilder {
                 .getMetaDataParser(entityClass).getTable();
         List<XNode> xnodes = new ArrayList<>();
         for (Table.SqlSegment sql : table.getSqlSegments()) {
+            logger.debug("parsing embedded sql: {}, entity class: {} ", sql.toXml(), entityClass);
             XPathParser parser = new XPathParser(StringUtils.xmlDeclare(sql.toXml()), false, configuration.getVariables(),
                     new XMLMapperEntityResolver());
             xnodes.add(parser.evalNode("sql"));

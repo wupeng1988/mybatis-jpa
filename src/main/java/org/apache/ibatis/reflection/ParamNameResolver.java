@@ -16,6 +16,12 @@
 
 package org.apache.ibatis.reflection;
 
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.binding.MapperMethod.ParamMap;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -23,15 +29,10 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.binding.MapperMethod.ParamMap;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
-
 public class ParamNameResolver {
 
   private static final String GENERIC_NAME_PREFIX = "param";
+  public static final String ARGS_TYPES_ARRAY = "arg_types_array";
 
   /**
    * <p>
@@ -130,6 +131,13 @@ public class ParamNameResolver {
         }
         i++;
       }
+
+      Class[] argsType = new Class[args.length];
+      for (int j = 0; j < args.length; j++) {
+        argsType[j] = args[j].getClass();
+      }
+
+      param.put(ARGS_TYPES_ARRAY, argsType);
       return param;
     }
   }
