@@ -75,7 +75,7 @@ public class SaveAllGeneratorImpl extends AbstractSqlGenerator {
 
         StringBuilder insert = new StringBuilder();
         insert.append(baseInfo(dataParser, !useGeneratedKeys()))
-                .append(foreach("item,", "index", "list", null,",",null,
+                .append(foreach("item", "index", "list", null,",",null,
                         values(dataParser, !useGeneratedKeys())));
         return insert(getMethod(params), List.class.getName(),
                 keyProperty, keyColumn, useGeneratedKeys, insert.toString());

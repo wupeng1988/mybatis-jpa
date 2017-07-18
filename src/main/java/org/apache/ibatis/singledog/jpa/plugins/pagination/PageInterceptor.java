@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -100,9 +101,9 @@ public class PageInterceptor implements Interceptor {
             //query list for page
             resultList = getPaginationList(ms, parameter, rowBounds, resultHandler, executor, cacheKey, boundSql,
                     configuration, additionalParameters, pageable);
-            if (isReturnPage(ms, invocation.getMethod())) {
+            if (isReturnPage(ms, parameter)) {
                 Long count = getCountNum(ms, parameter, rowBounds, resultHandler, executor, boundSql, msId, configuration);
-                return new PageImpl(resultList, pageable, count);
+                return Collections.singletonList(new PageImpl(resultList, pageable, count));
             }
             return resultList;
         } else if (dialect.isSortQuery(ms, parameter, rowBounds)) {
@@ -124,11 +125,13 @@ public class PageInterceptor implements Interceptor {
                 Class mapperClass = Class.forName(ms.getNamespace());
                 String methodName = ms.getId().substring(ms.getId().lastIndexOf(".") + 1);
                 if (paramObject instanceof Pageable) {
-                    Method method = mapperClass.getDeclaredMethod(methodName, Pageable.class);
-                    type = method.getReturnType();
+                    Method method = ReflectionUtils.findMethod(mapperClass, methodName, Pageable.class);
+                    if (method != null)
+                        type = method.getReturnType();
                 } else if (paramObject instanceof Map) {
-                    Method method = mapperClass.getDeclaredMethod(methodName, (Class[]) ((Map) paramObject).get(ParamNameResolver.ARGS_TYPES_ARRAY));
-                    type = method.getReturnType();
+                    Method method = ReflectionUtils.findMethod(mapperClass, methodName, (Class[]) ((Map) paramObject).get(ParamNameResolver.ARGS_TYPES_ARRAY));
+                    if (method != null)
+                        type = method.getReturnType();
                 }
             } catch (Exception e) {
                 logger.error("can not parse return type for method: {}", ms.getId());

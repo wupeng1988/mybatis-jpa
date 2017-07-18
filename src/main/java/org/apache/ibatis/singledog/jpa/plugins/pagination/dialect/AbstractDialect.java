@@ -66,7 +66,7 @@ public abstract class AbstractDialect implements Dialect {
             return sql;
         }
 
-        return getPageSql(sql, pageable, pageKey);
+        return getPageSql(getSortSql(ms, sql, pageable.getSort()), pageable, pageKey);
     }
 
     protected abstract String getPageSql(String sql, Pageable pageable, CacheKey cacheKey) ;

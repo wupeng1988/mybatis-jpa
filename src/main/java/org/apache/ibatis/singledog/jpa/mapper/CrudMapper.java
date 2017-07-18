@@ -91,10 +91,10 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
     @CustomProvider(ClearGeneratorImpl.class)
     int clear();
 
-    @CustomProvider(UpdateByPrimaryKeyGeneratorIml.class)
+    @CustomProvider(UpdateByPrimaryKeySelectiveGeneratorImpl.class)
     <S extends T> int updateByPrimaryKeySelective(S entity);
 
-    @CustomProvider(UpdateByPrimaryKeySelectiveGeneratorImpl.class)
+    @CustomProvider(UpdateByPrimaryKeyGeneratorIml.class)
     <S extends T> int updateByPrimaryKey(S entity);
 
     /**
@@ -109,11 +109,11 @@ public interface CrudMapper<T, ID> extends Mapper<T, ID> {
     <S extends T> int saveSelectiveAutoIncrement(S entity);
 
     @CustomProvider(SelectByEntityImpl.class)
-    T selectOne(T example);
+    T findOne(T example);
 
     @CustomProvider(SelectByEntityImpl.class)
-    List<T> selectList(T example);
+    List<T> findList(T example);
 
     @CustomProvider(SelectByExampleImpl.class)
-    List<T> selectByExample(Example<T> example);
+    List<T> findByExample(Example<T> example);
 }

@@ -15,30 +15,32 @@
  */
 package org.apache.ibatis.singledog.jpa.mapper;
 
-import org.apache.ibatis.annotations.SelectProvider;
+import org.apache.ibatis.singledog.jpa.annotation.CustomProvider;
 import org.apache.ibatis.singledog.jpa.domain.Page;
 import org.apache.ibatis.singledog.jpa.domain.Pageable;
 import org.apache.ibatis.singledog.jpa.domain.Sort;
-import org.apache.ibatis.singledog.jpa.generator.provider.PagingAndSortingProvider;
+import org.apache.ibatis.singledog.jpa.generator.impl.FindAllGeneratorImpl;
 
 import java.util.List;
 
 public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
 
-	/**
-	 * Returns all entities sorted by the given options.
-	 * 
-	 * @param sort
-	 * @return all entities sorted by the given options
-	 */
-	@SelectProvider(type = PagingAndSortingProvider.class, method = "findAll")
-	List<T> findAll(Sort sort);
+    /**
+     * Returns all entities sorted by the given options.
+     *
+     * @param sort
+     * @return all entities sorted by the given options
+     */
+//	@SelectProvider(type = PagingAndSortingProvider.class, method = "findAll")
+    @CustomProvider(FindAllGeneratorImpl.class)
+    List<T> findAll(Sort sort);
 
-	/**
-	 * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-	 * 
-	 * @param pageable
-	 * @return a page of entities
-	 */
-	Page<T> findAllByPage(Pageable pageable);
+    /**
+     * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
+     *
+     * @param pageable
+     * @return a page of entities
+     */
+    @CustomProvider(FindAllGeneratorImpl.class)
+    Page<T> findAllByPage(Pageable pageable);
 }
