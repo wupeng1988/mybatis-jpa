@@ -101,7 +101,7 @@ public class PageInterceptor implements Interceptor {
             //query list for page
             resultList = getPaginationList(ms, parameter, rowBounds, resultHandler, executor, cacheKey, boundSql,
                     configuration, additionalParameters, pageable);
-            if (isReturnPage(ms, parameter)) {
+            if (isReturnPage(ms)) {
                 Long count = getCountNum(ms, parameter, rowBounds, resultHandler, executor, boundSql, msId, configuration);
                 return Collections.singletonList(new PageImpl(resultList, pageable, count));
             }
@@ -117,22 +117,16 @@ public class PageInterceptor implements Interceptor {
         }
     }
 
-    private boolean isReturnPage(MappedStatement ms, Object paramObject) {
+    private boolean isReturnPage(MappedStatement ms) {
         String key = ms.getId();
         Class type = returnTypeCache.get(key);
         if (type == null) {
             try {
                 Class mapperClass = Class.forName(ms.getNamespace());
                 String methodName = ms.getId().substring(ms.getId().lastIndexOf(".") + 1);
-                if (paramObject instanceof Pageable) {
-                    Method method = ReflectionUtils.findMethod(mapperClass, methodName, Pageable.class);
-                    if (method != null)
-                        type = method.getReturnType();
-                } else if (paramObject instanceof Map) {
-                    Method method = ReflectionUtils.findMethod(mapperClass, methodName, (Class[]) ((Map) paramObject).get(ParamNameResolver.ARGS_TYPES_ARRAY));
-                    if (method != null)
-                        type = method.getReturnType();
-                }
+                Method method = ReflectionUtils.findMethodByName(mapperClass, methodName);
+                if (method != null)
+                    type = method.getReturnType();
             } catch (Exception e) {
                 logger.error("can not parse return type for method: {}", ms.getId());
                 logger.error(e.getMessage(), e);

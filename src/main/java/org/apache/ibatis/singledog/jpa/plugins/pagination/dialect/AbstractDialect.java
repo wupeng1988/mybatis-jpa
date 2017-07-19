@@ -38,7 +38,8 @@ public abstract class AbstractDialect implements Dialect {
     /**
      * Cache,
      */
-    private static final Cache<String, String> MS_CACHE = new SimpleCache<>();
+    private static final Cache<String, String> MS_PAGE_CACHE = new SimpleCache<>();
+    private static final Cache<String, String> MS_SORT_CACHE = new SimpleCache<>();
 
     //处理SQL
     protected CountSqlParser countSqlParser = new CountSqlParser();
@@ -99,23 +100,23 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     Sort extractSortParam(MappedStatement ms, Object parameterObject) {
-        String index = MS_CACHE.get(ms.getId());
+        String index = MS_SORT_CACHE.get(ms.getId());
         if (index == null) {
             if (parameterObject instanceof Map) {
                 for (Map.Entry<String, Object> entry : ((Map<String, Object>) parameterObject).entrySet()) {
                     Object value = entry.getValue();
                     if (value instanceof Sort) {
-                        MS_CACHE.put(ms.getId(), entry.getKey());
+                        MS_SORT_CACHE.put(ms.getId(), entry.getKey());
                         return (Sort) value;
                     }
                     if (value instanceof Pageable) {
-                        MS_CACHE.put(ms.getId(), entry.getKey());
+                        MS_SORT_CACHE.put(ms.getId(), entry.getKey());
                         return ((Pageable) value).getSort();
                     }
                 }
             }
 
-            MS_CACHE.put(ms.getId(), DEFAULT_INDEX);
+            MS_SORT_CACHE.put(ms.getId(), DEFAULT_INDEX);
         } else if (!DEFAULT_INDEX.equals(index)) {
             return (Sort) ((Map) parameterObject).get(index);
         }
@@ -130,19 +131,19 @@ public abstract class AbstractDialect implements Dialect {
     }
 
     Pageable extractPageParam(MappedStatement ms, Object parameterObject) {
-        String index = MS_CACHE.get(ms.getId());
+        String index = MS_PAGE_CACHE.get(ms.getId());
         if (index == null) {
             if (parameterObject instanceof Map) {
                 for (Map.Entry<String, Object> entry : ((Map<String, Object>) parameterObject).entrySet()) {
                     Object value = entry.getValue();
                     if (value instanceof Pageable) {
-                        MS_CACHE.put(ms.getId(), entry.getKey());
+                        MS_PAGE_CACHE.put(ms.getId(), entry.getKey());
                         return (Pageable) value;
                     }
                 }
             }
 
-            MS_CACHE.put(ms.getId(), DEFAULT_INDEX);
+            MS_PAGE_CACHE.put(ms.getId(), DEFAULT_INDEX);
         } else if (!DEFAULT_INDEX.equals(index)) {
             return (Pageable) ((Map) parameterObject).get(index);
         }

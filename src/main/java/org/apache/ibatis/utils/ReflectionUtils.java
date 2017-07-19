@@ -164,6 +164,22 @@ public abstract class ReflectionUtils {
 		return null;
 	}
 
+	public static Method findMethodByName(Class<?> clazz, String name) {
+		Assert.notNull(clazz, "Class must not be null");
+		Assert.notNull(name, "Method name must not be null");
+		Class<?> searchType = clazz;
+		while (searchType != null) {
+			Method[] methods = (searchType.isInterface() ? searchType.getMethods() : getDeclaredMethods(searchType));
+			for (Method method : methods) {
+				if (name.equals(method.getName())) {
+					return method;
+				}
+			}
+			searchType = searchType.getSuperclass();
+		}
+		return null;
+	}
+
 	/**
 	 * Invoke the specified {@link Method} against the supplied target object with no arguments.
 	 * The target object can be {@code null} when invoking a static {@link Method}.
