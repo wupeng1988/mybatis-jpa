@@ -25,7 +25,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.reflection.ParamNameResolver;
 import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.singledog.jpa.generator.NamespaceRequiredSqlProvider;
+import org.apache.ibatis.features.jpa.generator.NamespaceRequiredSqlProvider;
 
 /**
  * @author Clinton Begin

@@ -25,7 +25,7 @@ import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.singledog.jpa.generator.MetaDataParser;
+import org.apache.ibatis.features.jpa.generator.MetaDataParser;
 import org.apache.ibatis.utils.StringUtils;
 
 import java.util.List;
