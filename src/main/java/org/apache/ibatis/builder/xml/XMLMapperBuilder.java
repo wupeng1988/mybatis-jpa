@@ -15,12 +15,15 @@
  */
 package org.apache.ibatis.builder.xml;
 
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.builder.*;
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.exceptions.EntityNotFoundException;
 import org.apache.ibatis.executor.ErrorContext;
+import org.apache.ibatis.features.jpa.builder.SqlContext;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.mapping.*;
+import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.parsing.XPathParser;
 import org.apache.ibatis.session.Configuration;
@@ -33,6 +36,7 @@ import org.apache.ibatis.features.jpa.meta.Column;
 import org.apache.ibatis.features.jpa.meta.Table;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+import org.apache.ibatis.utils.AnnotationUtils;
 import org.apache.ibatis.utils.ReflectionUtils;
 import org.apache.ibatis.utils.StringUtils;
 import org.slf4j.Logger;
@@ -129,10 +133,38 @@ public class XMLMapperBuilder extends BaseBuilder {
                 embeddedEntitySql(this.entityClass);
             }
             buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
-            if (this.enabledJpaFeatures)
+            if (this.enabledJpaFeatures) {
                 embeddedEntityStatement(this.entityClass, namespace);
+                checkMethodQueryStatement(namespace);
+            }
         } catch (Exception e) {
             throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
+        }
+    }
+
+    private void checkMethodQueryStatement(String namespace) {
+        try {
+            Class mapperClass = Class.forName(namespace);
+            ReflectionUtils.doWithMethods(mapperClass, method -> {
+                String id  = namespace + "." + method.getName();
+                if (configuration.getMappedStatement(id) == null) {
+                    if (AnnotationUtils.hasOneAnnotation(method,
+                            Select.class,Insert.class, Update.class, Delete.class,
+                            SelectProvider.class, InsertProvider.class, UpdateProvider.class,
+                            DeleteProvider.class)) {
+                        return;
+                    }
+
+                    SqlContext context = new SqlContext(mapperClass, method);
+                    String sql = context.getSqlXml();
+                    logger.debug("parsing embedded statement, sql: {}, mapper: {}method: {}",
+                            sql, mapperClass, method);
+                    XPathParser parser = new XPathParser(StringUtils.xmlDeclare(sql), false, configuration.getVariables(), new XMLMapperEntityResolver());
+                    buildStatementFromContext(parser.evalNodes("select|insert|update|delete"));
+                }
+            });
+        } catch (ClassNotFoundException e) {
+            throw new BuilderException("Error loading entity sql. Cause: " + e, e);
         }
     }
 

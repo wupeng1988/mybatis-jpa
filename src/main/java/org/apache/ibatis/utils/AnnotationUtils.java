@@ -31,6 +31,15 @@ public abstract class AnnotationUtils {
         return element.isAnnotationPresent(annotationType);
     }
 
+    public static boolean hasOneAnnotation(AnnotatedElement element, Class ... annotationTypes) {
+        for (Class cla : annotationTypes) {
+            if (element.isAnnotationPresent(cla))
+                return true;
+        }
+
+        return false;
+    }
+
     public static Annotation[] getAnnotations(AnnotatedElement element) {
         return element.getAnnotations();
     }

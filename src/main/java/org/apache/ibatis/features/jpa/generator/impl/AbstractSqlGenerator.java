@@ -53,7 +53,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
             builder.deleteCharAt(builder.length() - 1);
     }
 
-    String wrapProperty(String property) {
+    protected String wrapProperty(String property) {
         return new StringBuilder("#{").append(property).append("}").toString();
     }
 
@@ -107,7 +107,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return builder.append(NEW_LINE).append("</").append(tag).append(">");
     }
 
-    String foreach(String item, String index, String collection, String open,
+    protected String foreach(String item, String index, String collection, String open,
                    String separator, String close, String sql) {
         return createNode(TAG_FOREACH, null, sql, new MapBuilder()
                 .put("item", item)

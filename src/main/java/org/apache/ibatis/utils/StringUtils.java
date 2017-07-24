@@ -1186,6 +1186,35 @@ public abstract class StringUtils {
         return stringBuilder.toString();
     }
 
+    public static String nextHumpWord(String str) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (i != 0 && Character.isUpperCase(c))
+                break;
+            else
+                builder.append(c);
+        }
+
+        return builder.toString();
+    }
+
+    public static String trimLastWord(String str) {
+        int index = -1;
+        for (int i = str.length() - 1; i > 0; i--) {
+            if (Character.isUpperCase(str.charAt(i))) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            return str;
+        }
+
+        return str.substring(0, index);
+    }
+
     public static boolean equals(final CharSequence cs1, final CharSequence cs2) {
         if (cs1 == cs2) {
             return true;
