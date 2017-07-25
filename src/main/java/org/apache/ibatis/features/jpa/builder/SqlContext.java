@@ -158,10 +158,6 @@ public class SqlContext extends AbstractSqlGenerator {
                 .concat(String.valueOf(clazz)).concat(".").concat(String.valueOf(method)));
     }
 
-    public boolean isSelect() {
-        return false;//TODO
-    }
-
     public Table getTable() {
         return table;
     }
