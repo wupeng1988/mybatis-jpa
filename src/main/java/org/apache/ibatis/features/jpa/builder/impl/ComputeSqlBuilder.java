@@ -33,15 +33,18 @@ public class ComputeSqlBuilder extends AbstractSqlGenerator implements MethodSql
     private static final Map<String, String> OPERATORS = new HashMap<>();
 
     static {
+        OPERATORS.put("equal", "=");
         OPERATORS.put("equals", "=");
         OPERATORS.put("is", "=");
         OPERATORS.put("between", "between");
-        OPERATORS.put("lessthan", "<");
-        OPERATORS.put("lessthanequal", "<=");
-        OPERATORS.put("greaterthan", ">");
-        OPERATORS.put("greaterthanequal", ">=");
-        OPERATORS.put("after", ">");
-        OPERATORS.put("before", "<");
+        OPERATORS.put("lessthan", "&lt;");
+        OPERATORS.put("lessthanequal", "&lt;=");
+        OPERATORS.put("lessthanequals", "&lt;=");
+        OPERATORS.put("greaterthan", "&gt;");
+        OPERATORS.put("greaterthanequal", "&gt;=");
+        OPERATORS.put("greaterthanequals", "&gt;=");
+        OPERATORS.put("after", "&gt;");
+        OPERATORS.put("before", "&lt;");
         OPERATORS.put("isnull", "is null");
         OPERATORS.put("isnotnull", "is not null");
         OPERATORS.put("notnull", "is not null");
