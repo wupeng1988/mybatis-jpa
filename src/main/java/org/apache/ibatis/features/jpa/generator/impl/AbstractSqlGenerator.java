@@ -44,11 +44,11 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
     public static final String TAG_WHEN = "when";
     public static final String TAG_OTHERWISE = "otherwise";
 
-    String getMethod(Map<String, Object> params) {
+    protected String getMethod(Map<String, Object> params) {
         return String.valueOf(params.get(PARAM_KEY_ID));
     }
 
-    void trim(StringBuilder builder) {
+    protected void trim(StringBuilder builder) {
         if (builder.length() > 0)
             builder.deleteCharAt(builder.length() - 1);
     }
@@ -57,13 +57,13 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return new StringBuilder("#{").append(property).append("}").toString();
     }
 
-    String createSqlStatement(String id, String originalSql) {
+    protected String createSqlStatement(String id, String originalSql) {
         return new StringBuilder().append("<sql id=\"").append(id).append("\">").append(NEW_LINE)
                 .append(originalSql).append(NEW_LINE)
                 .append("</sql>").toString();
     }
 
-    static class MapBuilder {
+    protected static class MapBuilder {
         private Map<String, String> map = new LinkedHashMap<>();
 
         public MapBuilder put(String k, String v) {
@@ -77,7 +77,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
 
     }
 
-    void appendAttrs(StringBuilder builder, Map<String, String> attrs) {
+    protected void appendAttrs(StringBuilder builder, Map<String, String> attrs) {
         if (!CollectionUtils.isEmpty(attrs)) {
             attrs.forEach((k,v) -> {
                 if (v != null)
@@ -86,11 +86,11 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         }
     }
 
-    String createNode(String tag, String id, String rawContent, Map<String, String> attrs) {
+    protected String createNode(String tag, String id, String rawContent, Map<String, String> attrs) {
         return endTag(beginTag(tag, id, attrs).append(rawContent), tag).toString();
     }
 
-    StringBuilder beginTag(String tag, String id, Map<String, String> attrs) {
+    protected StringBuilder beginTag(String tag, String id, Map<String, String> attrs) {
         return beginTag(new StringBuilder(), tag, id, attrs);
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return builder;
     }
 
-    StringBuilder endTag(StringBuilder builder, String tag) {
+    protected StringBuilder endTag(StringBuilder builder, String tag) {
         return builder.append(NEW_LINE).append("</").append(tag).append(">");
     }
 
@@ -119,7 +119,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
                 .build());
     }
 
-    String select(String id, String parameterType, String resultType, String resultMap, String sql) {
+    protected String select(String id, String parameterType, String resultType, String resultMap, String sql) {
         MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
             builder.put("parameterType", parameterType);
@@ -132,7 +132,7 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return createNode(TAG_SELECT, id, sql, builder.build());
     }
 
-    String insert(String id, String parameterType, String keyProperty, String keyColumn,
+    protected String insert(String id, String parameterType, String keyProperty, String keyColumn,
                   String useGeneratedKeys, String sql) {
         MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
@@ -146,11 +146,11 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
         return createNode(TAG_INSERT, id, sql, builder.build());
     }
 
-    String ifNotNull(String column, String sql) {
+    protected String ifNotNull(String column, String sql) {
         return createNode(TAG_IF, null, sql, new MapBuilder().put("test", column + " != null").build());
     }
 
-    String trim(String prefix, String suffix, String suffixOverrides, String sql) {
+    protected String trim(String prefix, String suffix, String suffixOverrides, String sql) {
         return createNode(TAG_TRIM, null, sql, new MapBuilder()
                 .put("prefix", prefix)
                 .put("suffix", suffix)
@@ -158,29 +158,29 @@ public abstract class AbstractSqlGenerator implements SqlGenerator {
                 .build());
     }
 
-    String set(String sql) {
+    protected String set(String sql) {
         return createNode(TAG_SET, null, sql, null);
     }
 
-    String delete(String id, String parameterType, String sql) {
+    protected String delete(String id, String parameterType, String sql) {
         MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
             builder.put("parameterType", parameterType);
         return createNode(TAG_DELETE, id, sql, builder.build());
     }
 
-    String update(String id, String parameterType, String sql) {
+    protected String update(String id, String parameterType, String sql) {
         MapBuilder builder = new MapBuilder();
         if (!StringUtils.isEmpty(parameterType))
             builder.put("parameterType", parameterType);
         return createNode(TAG_UPDATE, id, sql, builder.build());
     }
 
-    String where(String rawContent) {
+    protected String where(String rawContent) {
         return createNode(TAG_WHERE, null, rawContent, null);
     }
 
-    String include(String refId) {
+    protected String include(String refId) {
         return " <include refid=\"" + refId + "\" />";
     }
 }

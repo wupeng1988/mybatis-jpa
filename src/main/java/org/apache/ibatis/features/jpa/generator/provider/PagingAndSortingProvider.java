@@ -40,7 +40,7 @@ public class PagingAndSortingProvider implements NamespaceRequiredSqlProvider {
     }
 
     MetaDataParser getMetaDataParser() {
-        return EntitySqlDispatcher.getInstance().getMetaDataParser(namespace.getName());
+        return EntitySqlDispatcher.getInstance().getMetaDataParserByNamespace(namespace.getName());
     }
 
     @Override

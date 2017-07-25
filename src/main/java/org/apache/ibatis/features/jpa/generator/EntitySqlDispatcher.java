@@ -51,7 +51,7 @@ public class EntitySqlDispatcher {
         return metaDataParserMap.get(clazz);
     }
 
-    public MetaDataParser getMetaDataParser(String namespace) {
+    public MetaDataParser getMetaDataParserByNamespace(String namespace) {
         return namespaceDataParserMap.get(namespace);
     }
 

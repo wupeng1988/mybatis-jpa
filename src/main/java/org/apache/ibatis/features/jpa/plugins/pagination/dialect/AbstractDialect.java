@@ -85,7 +85,7 @@ public abstract class AbstractDialect implements Dialect {
             return sql;
         }
         MetaDataParser dataParser = EntitySqlDispatcher.getInstance()
-                .getMetaDataParser(ms.getNamespace());
+                .getMetaDataParserByNamespace(ms.getNamespace());
 
         if (sort != null) {
             String sortSql = sort.toSql(dataParser.getTable());

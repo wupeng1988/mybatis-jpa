@@ -18,29 +18,37 @@ package org.apache.ibatis.features.jpa.builder.impl;
 import org.apache.ibatis.features.jpa.builder.MethodSqlBuilder;
 import org.apache.ibatis.features.jpa.builder.SqlBuilderChain;
 import org.apache.ibatis.features.jpa.builder.SqlContext;
+import org.apache.ibatis.utils.StringUtils;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by Adam on 2017/7/24.
+ * Created by Adam on 2017/7/25.
  */
-public class SortDirectionSqlBuilder implements MethodSqlBuilder {
+public class NumberSqlBuilder implements MethodSqlBuilder {
 
-    private static final Set<String> directions = new HashSet<>();
+    private static final Map<String, Integer> LIMIT_MAP = new HashMap<>();
 
     static {
-        directions.add("asc");
-        directions.add("desc");
+        LIMIT_MAP.put("first", 1);
+        LIMIT_MAP.put("one", 1);
+        LIMIT_MAP.put("top", 1);
     }
 
     @Override
     public void build(String keyWord, SqlContext sqlContext, SqlBuilderChain builderChain) {
-        if (directions.contains(keyWord.toLowerCase())) {
-            sqlContext.append(keyWord.toLowerCase());
-        } else {
-            builderChain.build(keyWord, sqlContext);
+        for (Map.Entry<String, Integer> entry : LIMIT_MAP.entrySet()) {
+            if (StringUtils.startsWithIgnoreCase(keyWord, entry.getKey())) {
+                if (StringUtils.equalsIgnoreCase(keyWord, entry.getKey())) {
+                    sqlContext.setLimitSegment(" limit ".concat(String.valueOf(entry.getValue())));
+                } else {
+                    keyWord = keyWord.substring(entry.getKey().length());
+                    if (StringUtils.isNumberic(keyWord)) {
+                        sqlContext.setLimitSegment(" limit ".concat(keyWord));
+                    }
+                }
+            }
         }
     }
-
 }

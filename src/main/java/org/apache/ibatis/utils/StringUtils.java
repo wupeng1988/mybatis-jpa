@@ -145,6 +145,10 @@ public abstract class StringUtils {
         return false;
     }
 
+    public static boolean contains(String source, String sub) {
+        return isNotEmpty(source) && isNotEmpty(sub) && source.contains(sub);
+    }
+
     /**
      * Check whether the given {@code String} contains any whitespace characters.
      * @param str the {@code String} to check (may be {@code null})
@@ -1245,6 +1249,18 @@ public abstract class StringUtils {
         }
 
         return cs1.equals(cs2);
+    }
+
+    public static boolean isNumberic(String str) {
+        if (isNotEmpty(str)) {
+            for (int i = 0; i < str.length(); i++) {
+                if (!Character.isDigit(str.charAt(i)))
+                    return false;
+            }
+
+            return true;
+        }
+        return false;
     }
 
     public static String xmlDeclare(String content) {

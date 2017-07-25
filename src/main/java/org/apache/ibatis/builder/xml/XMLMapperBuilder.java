@@ -146,16 +146,17 @@ public class XMLMapperBuilder extends BaseBuilder {
         try {
             Class mapperClass = Class.forName(namespace);
             ReflectionUtils.doWithMethods(mapperClass, method -> {
-                String id  = namespace + "." + method.getName();
-                if (configuration.getMappedStatement(id) == null) {
+                String id = namespace + "." + method.getName();
+                if (!containsStatement(id)) {
                     if (AnnotationUtils.hasOneAnnotation(method,
-                            Select.class,Insert.class, Update.class, Delete.class,
+                            Select.class, Insert.class, Update.class, Delete.class,
                             SelectProvider.class, InsertProvider.class, UpdateProvider.class,
                             DeleteProvider.class)) {
                         return;
                     }
 
                     SqlContext context = new SqlContext(mapperClass, method);
+                    context.parse();
                     String sql = context.getSqlXml();
                     logger.debug("parsing embedded statement, sql: {}, mapper: {}method: {}",
                             sql, mapperClass, method);
@@ -165,6 +166,14 @@ public class XMLMapperBuilder extends BaseBuilder {
             });
         } catch (ClassNotFoundException e) {
             throw new BuilderException("Error loading entity sql. Cause: " + e, e);
+        }
+    }
+
+    private boolean containsStatement(String id) {
+        try {
+            return configuration.getMappedStatement(id) != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 
