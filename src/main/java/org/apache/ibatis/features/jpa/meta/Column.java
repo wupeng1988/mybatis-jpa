@@ -40,7 +40,9 @@ public final class Column {
     private boolean nullable = true;
     private boolean unique = false;
     private String columnDefinition;
-    private int scale = 2;
+    private int precision;
+    private int scale;
+    private String defaultValue;
     private int length = 255;
 
     public Column() {}
@@ -64,6 +66,8 @@ public final class Column {
             this.length = column.length();
             this.type = column.type();
             this.scale = column.scale();
+            this.precision = column.precision();
+            this.defaultValue = column.defaultValue();
         }
 
         if (StringUtils.isEmpty(this.column)) {
@@ -73,6 +77,22 @@ public final class Column {
         if (StringUtils.isEmpty(type)) {
             this.type = JdbcTypeConverter.toJdbcType(field.getType(), this.length);
         }
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
     }
 
     public int getScale() {

@@ -17,7 +17,9 @@ package org.apache.ibatis.features.jpa.generator;
 
 import org.apache.ibatis.session.Configuration;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -55,6 +57,10 @@ public class EntitySqlDispatcher {
         return namespaceDataParserMap.get(namespace);
     }
 
+    public Set<Class> getEntities() {
+        return Collections.unmodifiableSet(metaDataParserMap.keySet());
+    }
+
     private void addMetaDataParser(MetaDataParser parser) {
         synchronized (metaDataParserMap) {
             metaDataParserMap.put(parser.getEntityClass(), parser);
@@ -63,7 +69,4 @@ public class EntitySqlDispatcher {
             namespaceDataParserMap.put(parser.getMapper(), parser);
         }
     }
-
-
-
 }

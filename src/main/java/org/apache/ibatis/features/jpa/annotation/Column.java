@@ -122,4 +122,6 @@ public @interface Column {
     int scale() default 0;
 
     String type() default "";
+
+    String defaultValue() default "";
 }
