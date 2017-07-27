@@ -116,9 +116,9 @@
     </contributors>
 
     <scm>
-        <url>http://github.com/mybatis/mybatis-3</url>
-        <connection>scm:git:ssh://github.com/mybatis/mybatis-3.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/mybatis/mybatis-3.git</developerConnection>
+        <url>https://github.com/wupeng1988/mybatis-3</url>
+        <connection>scm:git:ssh://github.com:wupeng1988/mybatis-3.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:wupeng1988/mybatis-3.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <issueManagement>
