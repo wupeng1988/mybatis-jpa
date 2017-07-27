@@ -16,8 +16,12 @@
 package org.apache.ibatis.features.jpa.generator;
 
 /**
+ *
+ * deprecated temporary
+ *
  * Created by Adam on 2017/7/10.
  */
+@Deprecated
 public interface NamespaceRequiredSqlProvider<T> {
 
     void setNamespace(Class namespace);

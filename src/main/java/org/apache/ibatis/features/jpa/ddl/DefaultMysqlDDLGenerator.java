@@ -122,15 +122,15 @@ public class DefaultMysqlDDLGenerator implements DDLGenerator {
         }
 
         boolean needUpdate = false;
-        if (!StringUtils.equalsIgnoreCase(column.getType(), tableColumn.getType())) {//类型不匹配
+        if (!StringUtils.equalsIgnoreCase(column.getType(), tableColumn.getType())) {// type not match
             logger.info("column type has been changed ! {} -> {}", tableColumn.getType(), column.getType());
             needUpdate = true;
         }
 
-        if (!needUpdate && column.getLength() != tableColumn.getLength()) {//长度不一致
+        /*if (!needUpdate && column.getLength() != tableColumn.getLength()) {// length not match
             logger.info("column length has been changed ! {} -> {}", tableColumn.getLength(), column.getLength());
             needUpdate = true;
-        }
+        }*/
 
         if (!needUpdate && column.isNullable() != tableColumn.isNullable()) {
             logger.info("column nullable has been changed ! {} -> {}", tableColumn.isNullable(), column.isNullable());

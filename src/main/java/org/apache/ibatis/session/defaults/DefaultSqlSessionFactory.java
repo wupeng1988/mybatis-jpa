@@ -41,7 +41,11 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
     public DefaultSqlSessionFactory(Configuration configuration) {
         this.configuration = configuration;
-        new SchemaExport().export(configuration.getEnvironment().getDataSource(), true, false);
+    }
+
+    public DefaultSqlSessionFactory(Configuration configuration, boolean printDDL, boolean executeDDL) {
+        this.configuration = configuration;
+        new SchemaExport().export(configuration.getEnvironment().getDataSource(), printDDL, executeDDL);
     }
 
     @Override

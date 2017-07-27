@@ -31,7 +31,6 @@ public interface PagingAndSortingMapper<T, ID> extends CrudMapper<T, ID> {
      * @param sort
      * @return all entities sorted by the given options
      */
-//	@SelectProvider(type = PagingAndSortingProvider.class, method = "findAll")
     @CustomProvider(FindAllGeneratorImpl.class)
     List<T> findAll(Sort sort);
 
