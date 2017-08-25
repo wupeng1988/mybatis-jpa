@@ -160,7 +160,7 @@ Mybatis-Jpa特性
 			//排序支持： select * from city where name like and ppostcode < ? order by ...
 			List<City> findByNameLikeAndPostcodeLessThanEqual(String name, int maxPostcode, Sort sort);
 
-		 **需要注意， Sort与Pageable参数不能与findTop5这种方法名定义一起使用， 如果使用findTop5这种形式请使用findTop5...OrderBy...**
+		 **需要注意， Sort与Pageable参数不能与findTop5这种方法名定义一起使用， 如果使用findTop5这种形式请使用find...OrderBy...**
 
 	3. 删除的前缀支持`delete/remove/del...by...`, 条件的约定于上述一致。
 
