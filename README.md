@@ -13,10 +13,10 @@ Quick Start
 1.  引入jar包：
 
 		<dependency>
-            <groupId>org.singledog</groupId>
-            <artifactId>mybatis-jpa-springboot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+		    <groupId>org.singledog</groupId>
+		    <artifactId>mybatis-jpa-springboot-starter</artifactId>
+		    <version>1.0-RELEASE</version>
+		</dependency>
 
 2.  编写实体类Entity：
 
