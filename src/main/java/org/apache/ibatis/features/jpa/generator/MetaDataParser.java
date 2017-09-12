@@ -27,6 +27,7 @@ import org.apache.ibatis.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +87,10 @@ public class MetaDataParser {
         List<Column> idMappings = new ArrayList<>();
         List<Column> columnMappings = new ArrayList<>();
         ReflectionUtils.doWithFields(entityClass, field -> {
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) {
+                logger.info("ignoring static or final field : {}", field.getName());
+                return;
+            }
             Id id = AnnotationUtils.getAnnotation(field, Id.class);
             org.apache.ibatis.features.jpa.annotation.Column columnAnno =
                     AnnotationUtils.getAnnotation(field, org.apache.ibatis.features.jpa.annotation.Column.class);
