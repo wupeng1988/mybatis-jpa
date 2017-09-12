@@ -497,26 +497,6 @@ public class XMLMapperBuilder extends BaseBuilder {
         return builderAssistant.buildResultMapping(resultType, property, column, javaTypeClass, jdbcTypeEnum, nestedSelect, nestedResultMap, notNullColumn, columnPrefix, typeHandlerClass, flags, resultSet, foreignColumn, lazy);
     }
 
-    private ResultMapping buildResultMappingFromColumnMeta(Column columnMeta, Class<?> resultType, List<ResultFlag> flags) throws Exception {
-        String property = columnMeta.getProperty();
-        String column = columnMeta.getColumn();
-        String javaType = columnMeta.getJavaType();
-        String jdbcType = columnMeta.getType();
-        String nestedSelect = null;
-        String nestedResultMap = null;
-        String notNullColumn = null;
-        String columnPrefix = null;
-        String typeHandler = null;
-        String resultSet = null;
-        String foreignColumn = null;
-        boolean lazy = false;
-        Class<?> javaTypeClass = resolveClass(javaType);
-        @SuppressWarnings("unchecked")
-        Class<? extends TypeHandler<?>> typeHandlerClass = (Class<? extends TypeHandler<?>>) resolveClass(typeHandler);
-        JdbcType jdbcTypeEnum = resolveJdbcType(jdbcType);
-        return builderAssistant.buildResultMapping(resultType, property, column, javaTypeClass, jdbcTypeEnum, nestedSelect, nestedResultMap, notNullColumn, columnPrefix, typeHandlerClass, flags, resultSet, foreignColumn, lazy);
-    }
-
     private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
         if ("association".equals(context.getName())
                 || "collection".equals(context.getName())

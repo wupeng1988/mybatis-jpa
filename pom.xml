@@ -29,7 +29,7 @@
 
     <groupId>org.singledog</groupId>
     <artifactId>mybatis-jpa</artifactId>
-    <version>3.4.5-RC1</version>
+    <version>3.4.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>mybatis</name>
