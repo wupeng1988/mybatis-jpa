@@ -142,7 +142,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void checkMethodQueryStatement(String namespace) {
+    void checkMethodQueryStatement(String namespace) {
         try {
             Class mapperClass = Class.forName(namespace);
             ReflectionUtils.doWithMethods(mapperClass, method -> {
@@ -177,7 +177,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntityStatement(final Class entity, String namespace) throws ClassNotFoundException {
+    void embeddedEntityStatement(final Class entity, String namespace) throws ClassNotFoundException {
         Class mapperClass = Class.forName(namespace);
         ReflectionUtils.doWithMethods(mapperClass, method -> {
             if (method.isAnnotationPresent(CustomProvider.class)) {
@@ -383,7 +383,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntityResultMap(Class entityClass) throws Exception {
+    void embeddedEntityResultMap(Class entityClass) throws Exception {
         String resultMap = EntitySqlDispatcher.getInstance().getMetaDataParser(entityClass).getResultMapString();
         XPathParser parser = new XPathParser(StringUtils.xmlDeclare(resultMap), false, configuration.getVariables(),
                 new XMLMapperEntityResolver());
@@ -438,7 +438,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntitySql(Class entityClass) throws Exception {
+    void embeddedEntitySql(Class entityClass) throws Exception {
         Table table = EntitySqlDispatcher.getInstance()
                 .getMetaDataParser(entityClass).getTable();
         List<XNode> xnodes = new ArrayList<>();
@@ -509,7 +509,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         return null;
     }
 
-    private void bindMapperForNamespace() {
+    void bindMapperForNamespace() {
         String namespace = builderAssistant.getCurrentNamespace();
         if (namespace != null) {
             Class<?> boundType = null;
