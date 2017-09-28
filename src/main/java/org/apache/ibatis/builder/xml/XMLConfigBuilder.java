@@ -1,17 +1,17 @@
 /**
- * Copyright 2009-2017 the original author or authors.
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *    Copyright 2009-2017 the original author or authors.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 package org.apache.ibatis.builder.xml;
 
@@ -20,6 +20,7 @@ import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.datasource.DataSourceFactory;
 import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.executor.loader.ProxyFactory;
+import org.apache.ibatis.features.jpa.mapper.Mapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.io.VFS;
 import org.apache.ibatis.logging.Log;
@@ -37,10 +38,15 @@ import org.apache.ibatis.session.*;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
+import org.apache.ibatis.utils.PackageScan;
+import org.apache.ibatis.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -48,6 +54,7 @@ import java.util.Properties;
  * @author Kazuki Shimizu
  */
 public class XMLConfigBuilder extends BaseBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(XMLConfigBuilder.class);
 
     private boolean parsed;
     private final XPathParser parser;
@@ -119,9 +126,25 @@ public class XMLConfigBuilder extends BaseBuilder {
         }
     }
 
-    private void jpaMapperClass() {
-        //TODO
-
+    private void jpaMapperClass() throws ClassNotFoundException {
+        String packages = configuration.getVariables().getProperty("jpaMapperPackages");
+        if (!StringUtils.isEmpty(packages)) {
+            String[] packs = packages.split(",");
+            for (String pack : packs) {
+                logger.info("scan package: {}", pack);
+                List<String> classes = PackageScan.getClassNames(pack, true);
+                logger.info("scan package, classes: {}", classes);
+                for (String cls : classes) {
+                    Class clazz = Class.forName(cls);
+                    if (Mapper.class.isAssignableFrom(clazz)) {
+                        SingletonJpaMapperBuilder mapperBuilder = new SingletonJpaMapperBuilder(this.configuration, clazz);
+                        mapperBuilder.parse();
+                    } else {
+                        logger.error("class {} not instance of Mapper", cls);
+                    }
+                }
+            }
+        }
     }
 
     private Properties settingsAsProperties(XNode context) {
