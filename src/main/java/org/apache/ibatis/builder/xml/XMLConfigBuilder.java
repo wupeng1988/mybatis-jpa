@@ -120,30 +120,8 @@ public class XMLConfigBuilder extends BaseBuilder {
             databaseIdProviderElement(root.evalNode("databaseIdProvider"));
             typeHandlerElement(root.evalNode("typeHandlers"));
             mapperElement(root.evalNode("mappers"));
-            jpaMapperClass();
         } catch (Exception e) {
             throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
-        }
-    }
-
-    private void jpaMapperClass() throws ClassNotFoundException {
-        String packages = configuration.getVariables().getProperty("jpaMapperPackages");
-        if (!StringUtils.isEmpty(packages)) {
-            String[] packs = packages.split(",");
-            for (String pack : packs) {
-                logger.info("scan package: {}", pack);
-                List<String> classes = PackageScan.getClassNames(pack, true);
-                logger.info("scan package, classes: {}", classes);
-                for (String cls : classes) {
-                    Class clazz = Class.forName(cls);
-                    if (Mapper.class.isAssignableFrom(clazz)) {
-                        SingletonJpaMapperBuilder mapperBuilder = new SingletonJpaMapperBuilder(this.configuration, clazz);
-                        mapperBuilder.parse();
-                    } else {
-                        logger.error("class {} not instance of Mapper", cls);
-                    }
-                }
-            }
         }
     }
 

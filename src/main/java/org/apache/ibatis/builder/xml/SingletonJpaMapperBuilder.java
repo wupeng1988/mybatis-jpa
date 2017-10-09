@@ -40,12 +40,20 @@ public class SingletonJpaMapperBuilder extends XMLMapperBuilder {
     private String namespace;
 
     public SingletonJpaMapperBuilder(Configuration configuration, Class<? extends Mapper> clazz) {
-        super(new ByteArrayInputStream(new byte[0]), configuration, getResource(clazz), new HashMap<String, XNode>());
+        super(new ByteArrayInputStream(getXmlContent(clazz).getBytes()), configuration, getResource(clazz), configuration.getSqlFragments());
         this.resource = getResource(clazz);
         this.clazz = clazz;
         this.namespace = clazz.getName();
         this.configuration = configuration;
         this.findMetaClass(clazz);
+    }
+
+    private static String getXmlContent(Class clazz) {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<!DOCTYPE mapper\n" +
+                "        PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\"\n" +
+                "        \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">\n" +
+                "<mapper namespace=\"" + clazz.getName() + "\"></mapper>";
     }
 
     private static String getResource(Class clazz) {
@@ -73,13 +81,8 @@ public class SingletonJpaMapperBuilder extends XMLMapperBuilder {
 
     public void parse() {
         try {
-            if (!configuration.isResourceLoaded(resource)) {
-                embeddedEntityResultMap(this.entityClass);
-                embeddedEntitySql(this.entityClass);
-                embeddedEntityStatement(this.entityClass, namespace);
-                checkMethodQueryStatement(namespace);
-                configuration.addLoadedResource(resource);
-                bindMapperForNamespace();
+            if (!configuration.isResourceLoaded(resource) && !configuration.isJpaMapperLoaded(clazz)) {
+                super.parse();
             }
         } catch (Exception e) {
             throw new BuilderException("Error parsing JpaMapper. Cause: " + e, e);

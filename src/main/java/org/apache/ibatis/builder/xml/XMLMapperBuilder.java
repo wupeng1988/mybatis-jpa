@@ -136,6 +136,7 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (this.enabledJpaFeatures) {
                 embeddedEntityStatement(this.entityClass, namespace);
                 checkMethodQueryStatement(namespace);
+                configuration.addLoadedJpaMapper(namespaceClass);
             }
         } catch (Exception e) {
             throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
