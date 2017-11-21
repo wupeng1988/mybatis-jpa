@@ -13,9 +13,9 @@ Quick Start
 1.  引入jar包：
 
 		<dependency>
-		    <groupId>org.singledog</groupId>
-		    <artifactId>mybatis-jpa-springboot-starter</artifactId>
-		    <version>1.0-RELEASE</version>
+		    <groupId>org.singledog.spring.boot</groupId>
+		    <artifactId>mybatis-spring-boot-starter</artifactId>
+		    <version>1.3.3</version>
 		</dependency>
 
 2.  编写实体类Entity：
