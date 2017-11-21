@@ -38,7 +38,9 @@ public class PropertySqlBuilder implements MethodSqlBuilder {
     private void parseProperty(String originalKeyWord, SqlContext sqlContext, Table table,
                                String parsedProperty, String property,
                                SqlBuilderChain builderChain) {
-        property = StringUtils.uncapitalize(property);
+        if (StringUtils.isEmpty(parsedProperty))
+            property = StringUtils.uncapitalize(property);
+
         if (table.propertyExists(parsedProperty)) {
             sqlContext.append(table.getColumnByProperty(parsedProperty));
             if (!StringUtils.isEmpty(property)) {

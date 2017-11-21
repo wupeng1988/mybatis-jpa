@@ -135,6 +135,7 @@ public class Configuration {
     protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<KeyGenerator>("Key Generators collection");
 
     protected final Set<String> loadedResources = new HashSet<String>();
+    protected final Set<String> loadedJpaMappers = new HashSet<String>();
     protected final Map<String, XNode> sqlFragments = new StrictMap<XNode>("XML fragments parsed from previous mappers");
 
     protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<XMLStatementBuilder>();
@@ -286,8 +287,16 @@ public class Configuration {
         loadedResources.add(resource);
     }
 
+    public void addLoadedJpaMapper(Class jpaMapper) {
+        loadedJpaMappers.add(jpaMapper.getCanonicalName());
+    }
+
     public boolean isResourceLoaded(String resource) {
         return loadedResources.contains(resource);
+    }
+
+    public boolean isJpaMapperLoaded(Class jpaMapper) {
+        return loadedJpaMappers.contains(jpaMapper.getCanonicalName());
     }
 
     public Environment getEnvironment() {

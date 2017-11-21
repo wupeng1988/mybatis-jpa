@@ -136,13 +136,14 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (this.enabledJpaFeatures) {
                 embeddedEntityStatement(this.entityClass, namespace);
                 checkMethodQueryStatement(namespace);
+                configuration.addLoadedJpaMapper(namespaceClass);
             }
         } catch (Exception e) {
             throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
         }
     }
 
-    private void checkMethodQueryStatement(String namespace) {
+    void checkMethodQueryStatement(String namespace) {
         try {
             Class mapperClass = Class.forName(namespace);
             ReflectionUtils.doWithMethods(mapperClass, method -> {
@@ -177,7 +178,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntityStatement(final Class entity, String namespace) throws ClassNotFoundException {
+    void embeddedEntityStatement(final Class entity, String namespace) throws ClassNotFoundException {
         Class mapperClass = Class.forName(namespace);
         ReflectionUtils.doWithMethods(mapperClass, method -> {
             if (method.isAnnotationPresent(CustomProvider.class)) {
@@ -383,7 +384,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntityResultMap(Class entityClass) throws Exception {
+    void embeddedEntityResultMap(Class entityClass) throws Exception {
         String resultMap = EntitySqlDispatcher.getInstance().getMetaDataParser(entityClass).getResultMapString();
         XPathParser parser = new XPathParser(StringUtils.xmlDeclare(resultMap), false, configuration.getVariables(),
                 new XMLMapperEntityResolver());
@@ -438,7 +439,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         }
     }
 
-    private void embeddedEntitySql(Class entityClass) throws Exception {
+    void embeddedEntitySql(Class entityClass) throws Exception {
         Table table = EntitySqlDispatcher.getInstance()
                 .getMetaDataParser(entityClass).getTable();
         List<XNode> xnodes = new ArrayList<>();
@@ -497,26 +498,6 @@ public class XMLMapperBuilder extends BaseBuilder {
         return builderAssistant.buildResultMapping(resultType, property, column, javaTypeClass, jdbcTypeEnum, nestedSelect, nestedResultMap, notNullColumn, columnPrefix, typeHandlerClass, flags, resultSet, foreignColumn, lazy);
     }
 
-    private ResultMapping buildResultMappingFromColumnMeta(Column columnMeta, Class<?> resultType, List<ResultFlag> flags) throws Exception {
-        String property = columnMeta.getProperty();
-        String column = columnMeta.getColumn();
-        String javaType = columnMeta.getJavaType();
-        String jdbcType = columnMeta.getType();
-        String nestedSelect = null;
-        String nestedResultMap = null;
-        String notNullColumn = null;
-        String columnPrefix = null;
-        String typeHandler = null;
-        String resultSet = null;
-        String foreignColumn = null;
-        boolean lazy = false;
-        Class<?> javaTypeClass = resolveClass(javaType);
-        @SuppressWarnings("unchecked")
-        Class<? extends TypeHandler<?>> typeHandlerClass = (Class<? extends TypeHandler<?>>) resolveClass(typeHandler);
-        JdbcType jdbcTypeEnum = resolveJdbcType(jdbcType);
-        return builderAssistant.buildResultMapping(resultType, property, column, javaTypeClass, jdbcTypeEnum, nestedSelect, nestedResultMap, notNullColumn, columnPrefix, typeHandlerClass, flags, resultSet, foreignColumn, lazy);
-    }
-
     private String processNestedResultMappings(XNode context, List<ResultMapping> resultMappings) throws Exception {
         if ("association".equals(context.getName())
                 || "collection".equals(context.getName())
@@ -529,7 +510,7 @@ public class XMLMapperBuilder extends BaseBuilder {
         return null;
     }
 
-    private void bindMapperForNamespace() {
+    void bindMapperForNamespace() {
         String namespace = builderAssistant.getCurrentNamespace();
         if (namespace != null) {
             Class<?> boundType = null;

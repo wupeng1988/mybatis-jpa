@@ -38,6 +38,8 @@ public enum  JdbcTypes {
     DATETIME("datetime", Date.class),
     FLOAT("float", float.class),
     FLOAT_OBJ("float", Float.class),
+    BIGINT_OBJ("bigint", Long.class),
+    BIGINT("bigint", long.class),
     DOUBLE("double", double.class),
     DOUBLE_OBJ("double", Double.class);
 
