@@ -15,7 +15,7 @@ Quick Start
 		<dependency>
 		    <groupId>org.singledog.spring.boot</groupId>
 		    <artifactId>mybatis-spring-boot-starter</artifactId>
-		    <version>1.3.3</version>
+		    <version>1.3.4</version>
 		</dependency>
 
 2.  编写实体类Entity：
