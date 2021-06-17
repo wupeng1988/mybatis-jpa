@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2021 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.ibatis.features.jpa.plugins.pagination.PageException;
+import org.apache.ibatis.utils.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +133,7 @@ public class CountSqlParser {
      */
     public boolean isSimpleCount(PlainSelect select) {
         //包含group by的时候不可以
-        if (select.getGroupByColumnReferences() != null) {
+        if (select.getGroupBy() != null && !CollectionUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
             return false;
         }
         //包含distinct的时候不可以
@@ -224,9 +225,9 @@ public class CountSqlParser {
     public void processFromItem(FromItem fromItem) {
         if (fromItem instanceof SubJoin) {
             SubJoin subJoin = (SubJoin) fromItem;
-            if (subJoin.getJoin() != null) {
-                if (subJoin.getJoin().getRightItem() != null) {
-                    processFromItem(subJoin.getJoin().getRightItem());
+            if (!CollectionUtils.isEmpty(subJoin.getJoinList())) {
+                if (subJoin.getJoinList().get(0).getRightItem() != null) {
+                    processFromItem(subJoin.getJoinList().get(0).getRightItem());
                 }
             }
             if (subJoin.getLeft() != null) {

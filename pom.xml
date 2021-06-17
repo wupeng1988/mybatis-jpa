@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-       Copyright 2009-2017 the original author or authors.
+       Copyright 2009-2021 the original author or authors.
 
        Licensed under the Apache License, Version 2.0 (the "License");
        you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 
     <groupId>org.singledog</groupId>
     <artifactId>mybatis-jpa</artifactId>
-    <version>3.4.7</version>
+    <version>3.4.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>mybatis</name>
@@ -148,7 +148,7 @@
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
-            <version>1.1</version>
+            <version>4.0</version>
         </dependency>
         <dependency>
             <groupId>ognl</groupId>
@@ -446,12 +446,16 @@
         <profile>
             <id>java17</id>
             <activation>
-                <jdk>1.7</jdk>
+<!--                <jdk>1.7</jdk>-->
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <maven.compiler.testTarget>1.7</maven.compiler.testTarget>
                 <maven.compiler.testSource>1.7</maven.compiler.testSource>
                 <maven.compiler.testCompilerArgument/>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
             </properties>
             <build>
                 <pluginManagement>
